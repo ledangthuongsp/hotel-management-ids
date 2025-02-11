@@ -2,48 +2,48 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\Schema; 
 return new class extends Migration
 {
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
+        Schema::create('users', function (Blueprint $table)
+        {
+            $table-> id();
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('user_name')->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->rememberToken();
+            $table->datetimes('day_of_birth');
+            $table->string('avatar_url')->default('default_avatar.png');
+            $table->datetimes('last_login_at');
+            $table->datetimes('update_pass_date');
+            $table->integer('update_pass_flg');
+            $table->softDeletes();
+
+            //Tracking xóa dữ liệu
+            $table->unsignedBigInteger('delete_user')->nullable();
+            $table->string('delete_name',50)->nullable();
+            $table->integer('delete_flg')->default(0);
+
+            //ForeignKey
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+
+            // Thông tin tạo/cập nhật
+            $table->timestamps();
+            $table->unsignedBigInteger('create_user')->nullable();
+            $table->string('create_name', 50)->nullable();
+            $table->unsignedBigInteger('update_user')->nullable();
+            $table->string('update_name', 10)->nullable();
             $table->timestamps();
         });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };
