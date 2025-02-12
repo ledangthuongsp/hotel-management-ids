@@ -1,7 +1,7 @@
 <?php
 namespace App\Repositories\Eloquent;
 use App\Models\User;
-use App\Repositories\IUserRepository;
+use App\Repositories\Interfaces\IUserRepository;
 
 class UserRepository implements IUserRepository
 {

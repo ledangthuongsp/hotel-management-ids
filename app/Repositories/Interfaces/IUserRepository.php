@@ -1,5 +1,5 @@
 <?php
-namespace App\Repositories;
+namespace App\Repositories\Interfaces;
 interface IUserRepository
 {
     public function getAll();

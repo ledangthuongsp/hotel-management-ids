@@ -4,6 +4,11 @@ return [
     'default' => 'default',
     'documentations' => [
         'default' => [
+            'info' => [
+            'title' => 'Hotel Management API',
+            'description' => 'API Documentation for Hotel Management System',
+            'version' => '1.0.0',
+            ],
             'api' => [
                 'title' => 'L5 Swagger UI',
             ],
@@ -229,6 +234,11 @@ return [
 
                     'passport' => []
                     */
+                    
+                ],
+                'bearerAuth' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
                 ],
             ],
         ],

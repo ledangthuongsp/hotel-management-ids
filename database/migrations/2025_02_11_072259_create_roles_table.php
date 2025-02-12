@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
-            $table->id();
+            $table->id('id');
             $table->string('name');
             $table->string('description');
             // Thông tin tạo/cập nhật/xóa
-            $table->timestamps();
             $table->softDeletes();
             $table->unsignedBigInteger('create_user')->nullable();
             $table->string('create_name', 50)->nullable();

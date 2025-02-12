@@ -1,0 +1,691 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Hotel Management API",
+        "description": "API Documentation for Hotel Management System",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Login",
+                "operationId": "2dd578ff7aba2721293dac66833b27d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ledangthuongsp@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Logout",
+                "operationId": "68a6108af04af5e3bc1ea68a6c6f1299",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/roles": {
+            "get": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get all roles",
+                "operationId": "ee3d9f8fe914d19b6a98365195f8de17",
+                "responses": {
+                    "200": {
+                        "description": "List of roles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Create a new role",
+                "operationId": "a6aa40f7b1a05bb10fdfb45eed3fc7f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Admin",
+                                            "Member"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Role created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot add more roles"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/roles/{id}": {
+            "put": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Update role by ID",
+                "operationId": "223c94d89b2d36fab718080529c69d5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Role ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Role updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Role not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Delete role by ID",
+                "operationId": "637dd6f2a1db825d3d521b2d4fb3acf9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Role ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot delete role, it is assigned to users"
+                    },
+                    "404": {
+                        "description": "Role not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/seeder/create-role": {
+            "post": {
+                "tags": [
+                    "Seeder"
+                ],
+                "summary": "Create Admin Role (No Token Required)",
+                "operationId": "4a343968e09043d441516e2cc7970c46",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Admin"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Full Access"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Role created successfully"
+                    },
+                    "400": {
+                        "description": "Admin role already exists"
+                    }
+                }
+            }
+        },
+        "/seeder/register": {
+            "post": {
+                "tags": [
+                    "Seeder"
+                ],
+                "summary": "Register User as Admin (No Token Required)",
+                "operationId": "e4c5f60a38aa0503b2320aa940def5b9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "user_name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "user_name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/test": {
+            "get": {
+                "tags": [
+                    "Test"
+                ],
+                "summary": "API Test Endpoint",
+                "operationId": "8c679225a1e8478d550461677ce1a9cf",
+                "responses": {
+                    "200": {
+                        "description": "Test Successful"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user by ID",
+                "operationId": "b253b58cc9966940360ec90555bfe3ab",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user by ID",
+                "operationId": "f51484172959fc6c703577b869a364c0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "user_name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "role_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete user by ID",
+                "operationId": "c02d4b20c36fa979a0112ed40123e73a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create a new user",
+                "operationId": "49b25cdfd1cc549029c3dfd6f39b4d60",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "user_name",
+                                    "email",
+                                    "password",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "user_name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "role_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "API Endpoints for Authentication"
+        },
+        {
+            "name": "Role",
+            "description": "Role Management APIs"
+        },
+        {
+            "name": "User",
+            "description": "User Management APIs"
+        },
+        {
+            "name": "Seeder",
+            "description": "Seeder"
+        },
+        {
+            "name": "Test",
+            "description": "Test"
+        }
+    ],
+    "security": {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer"
+        }
+    }
+}
