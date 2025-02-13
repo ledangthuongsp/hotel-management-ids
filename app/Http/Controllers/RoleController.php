@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RoleRequest;
 use App\Services\RoleService;
-use App\Http\Requests\CreateRoleRequest;
-use App\Http\Requests\UpdateRoleRequest;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-
 /**
  * @OA\Tag(
- *     name="Role",
- *     description="Role Management APIs"
+ *     name="Roles",
+ *     description="Quản lý quyền (Admin Only)"
  * )
  */
 class RoleController extends Controller
@@ -21,130 +19,72 @@ class RoleController extends Controller
     public function __construct(RoleService $roleService)
     {
         $this->roleService = $roleService;
-        $this->middleware('auth:api');
     }
 
     /**
      * @OA\Get(
      *     path="/roles",
-     *     tags={"Role"},
-     *     summary="Get all roles",
-     *     @OA\Response(
-     *         response=200,
-     *         description="List of roles",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="description", type="string"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time")
-     *             )
-     *         )
-     *     ),
-     *     security={{"bearerAuth":{}}}
+     *     summary="Danh sách các quyền",
+     *     tags={"Roles"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Danh sách quyền")
      * )
      */
-    public function getAllRoles()
+    public function listRoles(): JsonResponse
     {
-        return $this->roleService->getAllRoles();
+    $roles = $this->roleService->listRoles();
+
+    // Kiểm tra nếu không có roles
+    if ($roles->isEmpty()) {
+        return response()->json(['message' => 'No roles found'], 404);
     }
 
+    return response()->json($roles);
+    }
     /**
      * @OA\Post(
      *     path="/roles",
-     *     tags={"Role"},
-     *     summary="Create a new role",
+     *     summary="Tạo quyền mới",
+     *     tags={"Roles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name"},
-     *             @OA\Property(property="name", type="string", enum={"Admin", "Member"}),
-     *             @OA\Property(property="description", type="string", nullable=true)
+     *             @OA\Property(property="name", type="string", example="Admin"),
+     *             @OA\Property(property="description", type="string", example="Quyền quản trị")
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Role created successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="role", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(response=400, description="Cannot add more roles"),
-     *     security={{"bearerAuth":{}}}
+     *     @OA\Response(response=201, description="Tạo quyền thành công"),
+     *     @OA\Response(response=403, description="Không có quyền")
      * )
      */
-    public function createRole(CreateRoleRequest $request)
+    public function createRole(RoleRequest $request): JsonResponse
     {
-        return $this->roleService->createRole($request);
-    }
-
-    /**
-     * @OA\Put(
-     *     path="/roles/{id}",
-     *     tags={"Role"},
-     *     summary="Update role by ID",
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Role ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="description", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Role updated successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="role", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(response=404, description="Role not found"),
-     *     security={{"bearerAuth":{}}}
-     * )
-     */
-    public function updateRole(UpdateRoleRequest $request, $id)
-    {
-        return $this->roleService->updateRole($request, $id);
+        $role = $this->roleService->createRole($request->validated());
+        return response()->json(['message' => 'Role created successfully', 'role' => $role]);
     }
 
     /**
      * @OA\Delete(
-     *     path="/roles/{id}",
-     *     tags={"Role"},
-     *     summary="Delete role by ID",
+     *     path="/api/roles/{id}",
+     *     summary="Xóa quyền",
+     *     tags={"Roles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="Role ID",
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Role deleted successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=400, description="Cannot delete role, it is assigned to users"),
-     *     @OA\Response(response=404, description="Role not found"),
-     *     security={{"bearerAuth":{}}}
+     *     @OA\Response(response=200, description="Xóa thành công"),
+     *     @OA\Response(response=403, description="Không có quyền"),
+     *     @OA\Response(response=404, description="Không tìm thấy quyền")
      * )
      */
-    public function deleteRole($id)
+    public function deleteRole($id): JsonResponse
     {
-        return $this->roleService->deleteRole($id);
+        $this->roleService->deleteRole($id);
+        return response()->json(['message' => 'Role deleted successfully']);
     }
 }

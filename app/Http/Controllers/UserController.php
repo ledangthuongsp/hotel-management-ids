@@ -13,12 +13,6 @@ use Illuminate\Routing\Controller;
  *     name="User",
  *     description="User Management APIs"
  * )
- * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
  */
 class UserController extends Controller 
 {

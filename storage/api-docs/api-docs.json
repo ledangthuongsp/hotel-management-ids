@@ -3,6 +3,9 @@
     "info": {
         "title": "Hotel Management API",
         "description": "API Documentation for Hotel Management System",
+        "contact": {
+            "email": "support@hotelmanagement.com"
+        },
         "version": "1.0.0"
     },
     "servers": [
@@ -16,7 +19,8 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "User Login",
+                "summary": "Đăng nhập vào hệ thống",
+                "description": "Người dùng nhập email và mật khẩu để lấy access token",
                 "operationId": "2dd578ff7aba2721293dac66833b27d1",
                 "requestBody": {
                     "required": true,
@@ -30,12 +34,10 @@
                                 "properties": {
                                     "email": {
                                         "type": "string",
-                                        "format": "email",
                                         "example": "ledangthuongsp@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "format": "password",
                                         "example": "password123"
                                     }
                                 },
@@ -46,30 +48,150 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login successful"
+                        "description": "Đăng nhập thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "Bearer abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Sai email hoặc mật khẩu"
                     },
-                    "400": {
-                        "description": "Validation error"
+                    "422": {
+                        "description": "Validation lỗi"
                     }
                 }
             }
         },
-        "/logout": {
+        "/register": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "User Logout",
-                "operationId": "68a6108af04af5e3bc1ea68a6c6f1299",
+                "summary": "Đăng ký tài khoản",
+                "description": "Người dùng nhập thông tin để đăng ký tài khoản mới",
+                "operationId": "0903f2e0df1a8857bee538fc055417f0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "user_name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Thuong"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Le"
+                                    },
+                                    "user_name": {
+                                        "type": "string",
+                                        "example": "thuongle"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ledangthuongsp@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "Password123!"
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Đăng ký thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation lỗi"
+                    },
+                    "400": {
+                        "description": "Lỗi khi đăng ký"
+                    }
+                }
+            }
+        },
+        "/profile": {
+            "put": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Cập nhật thông tin cá nhân",
+                "operationId": "a36e92ccda89dd3aa71c9f01c01b22cf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "avatar": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Logout successful"
+                        "description": "Cập nhật thành công"
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Không có quyền truy cập"
                     }
                 },
                 "security": [
@@ -82,42 +204,13 @@
         "/roles": {
             "get": {
                 "tags": [
-                    "Role"
+                    "Roles"
                 ],
-                "summary": "Get all roles",
-                "operationId": "ee3d9f8fe914d19b6a98365195f8de17",
+                "summary": "Danh sách các quyền",
+                "operationId": "09ff32626e03bb5ef73b2d742aae0a90",
                 "responses": {
                     "200": {
-                        "description": "List of roles",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "description": {
-                                                "type": "string"
-                                            },
-                                            "created_at": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updated_at": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Danh sách quyền"
                     }
                 },
                 "security": [
@@ -128,9 +221,9 @@
             },
             "post": {
                 "tags": [
-                    "Role"
+                    "Roles"
                 ],
-                "summary": "Create a new role",
+                "summary": "Tạo quyền mới",
                 "operationId": "a6aa40f7b1a05bb10fdfb45eed3fc7f7",
                 "requestBody": {
                     "required": true,
@@ -143,14 +236,11 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "enum": [
-                                            "Admin",
-                                            "Member"
-                                        ]
+                                        "example": "Admin"
                                     },
                                     "description": {
                                         "type": "string",
-                                        "nullable": true
+                                        "example": "Quyền quản trị"
                                     }
                                 },
                                 "type": "object"
@@ -160,25 +250,10 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Role created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "role": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Tạo quyền thành công"
                     },
-                    "400": {
-                        "description": "Cannot add more roles"
+                    "403": {
+                        "description": "Không có quyền"
                     }
                 },
                 "security": [
@@ -188,79 +263,17 @@
                 ]
             }
         },
-        "/roles/{id}": {
-            "put": {
-                "tags": [
-                    "Role"
-                ],
-                "summary": "Update role by ID",
-                "operationId": "223c94d89b2d36fab718080529c69d5c",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Role ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "description": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Role updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "role": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Role not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
+        "/api/roles/{id}": {
             "delete": {
                 "tags": [
-                    "Role"
+                    "Roles"
                 ],
-                "summary": "Delete role by ID",
-                "operationId": "637dd6f2a1db825d3d521b2d4fb3acf9",
+                "summary": "Xóa quyền",
+                "operationId": "9b451f2ccf27942fb03604ea7290f8f9",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Role ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -269,25 +282,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Role deleted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Xóa thành công"
                     },
-                    "400": {
-                        "description": "Cannot delete role, it is assigned to users"
+                    "403": {
+                        "description": "Không có quyền"
                     },
                     "404": {
-                        "description": "Role not found"
+                        "description": "Không tìm thấy quyền"
                     }
                 },
                 "security": [
@@ -663,11 +664,15 @@
     "tags": [
         {
             "name": "Authentication",
-            "description": "API Endpoints for Authentication"
+            "description": "API liên quan đến đăng nhập và xác thực"
         },
         {
-            "name": "Role",
-            "description": "Role Management APIs"
+            "name": "Profile",
+            "description": "Quản lý thông tin cá nhân"
+        },
+        {
+            "name": "Roles",
+            "description": "Quản lý quyền (Admin Only)"
         },
         {
             "name": "User",
