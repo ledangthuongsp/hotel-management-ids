@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('user_name')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->dateTime('day_of_birth');
+            $table->dateTime('day_of_birth')->nullable(true);
             $table->string('avatar_url')->default('default_avatar.png');
-            $table->dateTime('last_login_at');
-            $table->dateTime('update_pass_date');
-            $table->integer('update_pass_flg');
+            $table->dateTime('last_login_at')->nullable(true);
+            $table->dateTime('update_pass_date')->nullable(true);
+            $table->integer('update_pass_flg')->nullable(true);
             $table->softDeletes();
 
             //Tracking xóa dữ liệu

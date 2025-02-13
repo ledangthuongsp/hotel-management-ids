@@ -2,21 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Validator;
+
+use App\Http\Requests\RegisterRequest;
 
 /**
- * @OA\Info(
- *      version="1.0.0",
- *      title="Hotel Management API",
- *      description="API Documentation for Hotel Management System"
- * )
- * 
  * @OA\Tag(
  *     name="Authentication",
- *     description="API Endpoints for Authentication"
+ *     description="API liên quan đến đăng nhập và xác thực"
  * )
  */
 class AuthController extends Controller
@@ -31,48 +27,71 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *     path="/login",
+     *     summary="Đăng nhập vào hệ thống",
+     *     description="Người dùng nhập email và mật khẩu để lấy access token",
      *     tags={"Authentication"},
-     *     summary="User Login",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", format="email", example="ledangthuongsp@gmail.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123")
-     *         ),
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", example="ledangthuongsp@gmail.com"),
+     *             @OA\Property(property="password", type="string", example="password123")
+     *         )
      *     ),
-     *     @OA\Response(response=200, description="Login successful"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=400, description="Validation error")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Đăng nhập thành công",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="user", type="object"),
+     *             @OA\Property(property="token", type="string", example="Bearer abc123...")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Sai email hoặc mật khẩu"),
+     *     @OA\Response(response=422, description="Validation lỗi")
      * )
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        // Validate input
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
-        }
-
-        return $this->authService->login($request);
+        $data = $this->authService->login($request->validated());
+        return response()->json($data);
     }
-
     /**
      * @OA\Post(
-     *     path="/logout",
+     *     path="/register",
+     *     summary="Đăng ký tài khoản",
+     *     description="Người dùng nhập thông tin để đăng ký tài khoản mới",
      *     tags={"Authentication"},
-     *     summary="User Logout",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Response(response=200, description="Logout successful"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"first_name", "last_name", "user_name", "email", "password"},
+     *             @OA\Property(property="first_name", type="string", example="Thuong"),
+     *             @OA\Property(property="last_name", type="string", example="Le"),
+     *             @OA\Property(property="user_name", type="string", example="thuongle"),
+     *             @OA\Property(property="email", type="string", example="ledangthuongsp@gmail.com"),
+     *             @OA\Property(property="password", type="string", example="Password123!"),
+     *             @OA\Property(property="role_id", type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Đăng ký thành công",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User registered successfully"),
+     *             @OA\Property(property="user", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Validation lỗi"),
+     *     @OA\Response(response=400, description="Lỗi khi đăng ký")
      * )
      */
-    public function logout()
+    public function register(RegisterRequest $request): JsonResponse
     {
-        return $this->authService->logout();
+        $data = $this->authService->register($request->validated());
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $data
+        ], 201);
     }
+
 }

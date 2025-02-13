@@ -1,42 +1,60 @@
 <?php
-
 namespace App\Services;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
-    public function login(Request $request)
+    /**
+     * Xử lý đăng nhập
+     */
+    public function login(array $data)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string|min:8|max:32',
-        ]);
+        // Kiểm tra nếu email có trong database
+        $user = User::where('email', $data['email'])->first();
 
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (!$user) {
+            // Nếu email không tồn tại, báo lỗi không tìm thấy tài khoản
+            throw ValidationException::withMessages(['email' => ['Email này không tồn tại.']]);
         }
 
-        // Cập nhật last_login_at
-        $user = Auth::guard('api')->user();
-        dd($user);
-        $user->update(['last_login_at' => Carbon::now()]);
+        // Kiểm tra mật khẩu nếu email tồn tại
+        if (!Hash::check($data['password'], $user->password)) {
+            // Nếu mật khẩu sai, báo lỗi mật khẩu sai
+            throw ValidationException::withMessages(['password' => ['Mật khẩu không chính xác.']]);
+        }
 
-        return response()->json([
-            'token' => $token,
-            'user' => $user
-        ]);
+        // Cập nhật last_login_at nếu đăng nhập thành công
+        $user->update(['last_login_at' => now()]);
+
+        // Trả về token và thông tin người dùng
+        return [
+            'user' => $user,
+            'token' => $user->createToken('API Token')->plainTextToken
+        ];
     }
 
-    public function logout()
+    /**
+     * Xử lý đăng ký tài khoản
+     */
+    public function register(array $data)
     {
-        Auth::guard('api')->logout();
-        return response()->json(['message' => 'Successfully logged out']);
+        // Mã hóa mật khẩu trước khi lưu
+        $data['password'] = Hash::make($data['password']);
+
+        // Tạo người dùng mới
+        $user = User::create([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'user_name' => $data['user_name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'role_id' => $data['role_id'],
+            'avatar_url' => 'default_avatar.png', // Gán avatar mặc định nếu không có
+        ]);
+
+        return $user;
     }
 }
