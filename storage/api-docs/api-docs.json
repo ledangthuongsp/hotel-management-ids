@@ -263,13 +263,13 @@
                 ]
             }
         },
-        "/api/roles/{id}": {
+        "/roles/{id}": {
             "delete": {
                 "tags": [
                     "Roles"
                 ],
                 "summary": "Xóa quyền",
-                "operationId": "9b451f2ccf27942fb03604ea7290f8f9",
+                "operationId": "637dd6f2a1db825d3d521b2d4fb3acf9",
                 "parameters": [
                     {
                         "name": "id",

@@ -1,11 +1,13 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RoleRequest;
 use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 /**
  * @OA\Tag(
  *     name="Roles",
@@ -32,15 +34,20 @@ class RoleController extends Controller
      */
     public function listRoles(): JsonResponse
     {
-    $roles = $this->roleService->listRoles();
+        try {
+            $roles = $this->roleService->listRoles();
 
-    // Kiểm tra nếu không có roles
-    if ($roles->isEmpty()) {
-        return response()->json(['message' => 'No roles found'], 404);
+            if ($roles->isEmpty()) {
+                return response()->json(['message' => 'No roles found'], 404); // 404 nếu không có dữ liệu
+            }
+
+            return response()->json($roles, 200); // 200 OK khi có dữ liệu
+        } catch (Exception $e) {
+            Log::error('Error fetching roles: ' . $e->getMessage());
+            return response()->json(['message' => 'Internal Server Error'], 500); // 500 lỗi hệ thống
+        }
     }
 
-    return response()->json($roles);
-    }
     /**
      * @OA\Post(
      *     path="/roles",
@@ -56,18 +63,25 @@ class RoleController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=201, description="Tạo quyền thành công"),
+     *     @OA\Response(response=400, description="Yêu cầu sai"),
      *     @OA\Response(response=403, description="Không có quyền")
      * )
      */
     public function createRole(RoleRequest $request): JsonResponse
     {
-        $role = $this->roleService->createRole($request->validated());
-        return response()->json(['message' => 'Role created successfully', 'role' => $role]);
+        try {
+            // Kiểm tra quyền trước khi tạo
+            $role = $this->roleService->createRole($request->validated());
+            return response()->json(['message' => 'Role created successfully', 'role' => $role], 201); // 201 khi tạo thành công
+        } catch (Exception $e) {
+            Log::error('Error creating role: ' . $e->getMessage());
+            return response()->json(['message' => 'Bad Request'], 400); // 400 khi có lỗi dữ liệu
+        }
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/roles/{id}",
+     *     path="/roles/{id}",
      *     summary="Xóa quyền",
      *     tags={"Roles"},
      *     security={{"bearerAuth":{}}},
@@ -78,13 +92,18 @@ class RoleController extends Controller
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(response=200, description="Xóa thành công"),
-     *     @OA\Response(response=403, description="Không có quyền"),
-     *     @OA\Response(response=404, description="Không tìm thấy quyền")
+     *     @OA\Response(response=404, description="Không tìm thấy quyền"),
+     *     @OA\Response(response=403, description="Không có quyền")
      * )
      */
     public function deleteRole($id): JsonResponse
     {
-        $this->roleService->deleteRole($id);
-        return response()->json(['message' => 'Role deleted successfully']);
+        try {
+            $this->roleService->deleteRole($id);
+            return response()->json(['message' => 'Role deleted successfully'], 200); // 200 OK khi xóa thành công
+        } catch (Exception $e) {
+            Log::error('Error deleting role: ' . $e->getMessage());
+            return response()->json(['message' => 'Role not found'], 404); // 404 khi không tìm thấy role
+        }
     }
 }

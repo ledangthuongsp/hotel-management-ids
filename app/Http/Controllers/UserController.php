@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\UserService;
 use App\Http\Requests\CreateUserRequest;
-use App\Http\Requests\UpdateUserRequest;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-
+use App\Http\Requests\UpdateUserRequest;
 /**
  * @OA\Tag(
  *     name="User",

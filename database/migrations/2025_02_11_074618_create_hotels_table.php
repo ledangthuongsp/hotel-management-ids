@@ -14,18 +14,19 @@ return new class extends Migration
         Schema::create('hotels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('name_jp');
+            $table->string('name_jp')->nullable();
             $table->string('code',50);
             //User ForeignKey
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             //City ForeignKey
-            $table->foreignId('role_id')->constrained('cities')->onDelete('cascade');
+            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
 
             $table->string('email');
             $table->string('telephone');
             $table->string('fax');
             $table->string('address_1');
-            $table->string('address_2');
+            $table->string('address_2')->nullable();
+            
             //Tracking time
             $table->softDeletes();
             $table->timestamps();
