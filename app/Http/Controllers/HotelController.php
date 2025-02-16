@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Services\HotelService;
-use App\Http\Requests\CreateHotelRequest;
-use App\Http\Requests\UpdateHotelRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-
+/**
+ * @OA\Tag(name="Hotels", description="Hotel Management API")
+ */
 class HotelController extends Controller
 {
     protected $hotelService;
@@ -14,49 +17,112 @@ class HotelController extends Controller
     public function __construct(HotelService $hotelService)
     {
         $this->hotelService = $hotelService;
-        $this->middleware('auth');
     }
 
-    // Hiển thị danh sách tất cả khách sạn
-    public function index()
+    /**
+     * @OA\Get(
+     *     path="/hotels",
+     *     summary="Lấy danh sách tất cả khách sạn",
+     *     tags={"Hotels"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Danh sách khách sạn")
+     * )
+     */
+    public function index(): JsonResponse
     {
-        $hotels = $this->hotelService->getAllHotels();
-        return view('hotels.index', compact('hotels'));
+        return response()->json($this->hotelService->getAllHotels());
     }
 
-    // Hiển thị form tạo khách sạn mới
-    public function create()
+    /**
+     * @OA\Get(
+     *     path="/hotels/{id}",
+     *     summary="Lấy thông tin chi tiết của một khách sạn",
+     *     tags={"Hotels"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID của khách sạn",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Thông tin khách sạn"),
+     *     @OA\Response(response=404, description="Không tìm thấy")
+     * )
+     */
+    public function show($id): JsonResponse
     {
-        return view('hotels.create');
+        return response()->json($this->hotelService->getHotelById($id));
     }
 
-    // Lưu khách sạn mới
-    public function store(CreateHotelRequest $request)
+    /**
+     * @OA\Post(
+     *     path="/hotels",
+     *     summary="Tạo mới khách sạn",
+     *     tags={"Hotels"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "code", "city_id", "email", "telephone", "address_1"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="name_jp", type="string", nullable=true),
+     *             @OA\Property(property="code", type="string"),
+     *             @OA\Property(property="city_id", type="integer"),
+     *             @OA\Property(property="email", type="string"),
+     *             @OA\Property(property="telephone", type="string"),
+     *             @OA\Property(property="fax", type="string"),
+     *             @OA\Property(property="address_1", type="string"),
+     *             @OA\Property(property="address_2", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Khách sạn được tạo thành công")
+     * )
+     */
+    public function store(Request $request): JsonResponse
     {
-        $validated = $request->validated();
-        $this->hotelService->createHotel($validated);
-        return redirect()->route('hotels.index');
+        $hotel = $this->hotelService->createHotel($request->all());
+        return response()->json(['message' => 'Hotel created successfully', 'hotel' => $hotel], 201);
     }
 
-    // Hiển thị form chỉnh sửa khách sạn
-    public function edit($id)
+    /**
+     * @OA\Put(
+     *     path="/hotels/{id}",
+     *     summary="Cập nhật thông tin khách sạn",
+     *     tags={"Hotels"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID của khách sạn",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="name_jp", type="string", nullable=true),
+     *             @OA\Property(property="code", type="string"),
+     *             @OA\Property(property="city_id", type="integer"),
+     *             @OA\Property(property="email", type="string"),
+     *             @OA\Property(property="telephone", type="string"),
+     *             @OA\Property(property="fax", type="string"),
+     *             @OA\Property(property="address_1", type="string"),
+     *             @OA\Property(property="address_2", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Cập nhật thành công")
+     * )
+     */
+    public function update(Request $request, $id): JsonResponse
     {
-        $hotel = $this->hotelService->getHotelByCity($id);
-        return view('hotels.edit', compact('hotel'));
+        $hotel = $this->hotelService->updateHotel($id, $request->all());
+        return response()->json(['message' => 'Hotel updated successfully', 'hotel' => $hotel]);
     }
 
-    // Cập nhật khách sạn
-    public function update(UpdateHotelRequest $request, $id)
-    {
-        $validated = $request->validated();
-        $this->hotelService->updateHotel($id, $validated);
-        return redirect()->route('hotels.index');
-    }
-
-    // Xóa khách sạn
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $this->hotelService->deleteHotel($id);
-        return redirect()->route('hotels.index');
+        return response()->json(['message' => 'Hotel deleted successfully'], 204);
     }
 }

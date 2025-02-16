@@ -5,16 +5,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class City extends Model
+class Ward extends Model
 {
     use SoftDeletes, HasFactory;
 
-    protected $fillable = [
-        'name',
-        'description',
-    ];
-    public function hotels()
+    protected $fillable = ['name', 'district_id'];
+
+    public function district()
     {
-        return $this->hasMany(Hotel::class);
+        return $this->belongsTo(District::class);
     }
 }

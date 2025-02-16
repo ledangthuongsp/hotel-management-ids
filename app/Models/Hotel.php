@@ -15,6 +15,7 @@ class Hotel extends Model
         'city_id',
         'email',
         'telephone',
+        'fax',
         'company_name',
         'tax_code',
         'address_1',

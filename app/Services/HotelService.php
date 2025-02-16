@@ -2,57 +2,73 @@
 namespace App\Services;
 
 use App\Models\Hotel;
-use Illuminate\Database\Eloquent\Collection;
-use App\Repositories\Interfaces\IHotelRepository;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class HotelService
 {
-    protected $hotelRepository;
-
-    public function __construct(IHotelRepository $hotelRepository)
+    public function getAllHotels()
     {
-        $this->hotelRepository = $hotelRepository;
+        $user = Auth::user();
+        return $user->role === 'admin' ? Hotel::all() : Hotel::where('user_id', $user->id)->get();
     }
 
-    // Lấy tất cả khách sạn
-    public function getAllHotels(): Collection
+    public function getHotelById($id)
     {
-        return $this->hotelRepository->getAllHotels();
+        $hotel = Hotel::findOrFail($id);
+        $this->authorizeUser($hotel);
+        return $hotel;
     }
 
-    // Lấy khách sạn theo city_id
-    public function getHotelByCity(int $cityId): Collection
+    public function createHotel($data)
     {
-        return $this->hotelRepository->getHotelByCity($cityId);
+        $data['user_id'] = Auth::id();
+        $this->validateHotel($data);
+        return Hotel::create($data);
     }
 
-    // Lấy khách sạn theo tên
-    public function getHotelByName(string $name): Collection
+    public function updateHotel($id, $data)
     {
-        return $this->hotelRepository->getHotelByName($name);
+        $hotel = Hotel::findOrFail($id);
+        $this->authorizeUser($hotel);
+        $this->validateHotel($data, $id);
+        $hotel->update($data);
+        return $hotel;
     }
 
-    // Lấy khách sạn theo tên và city_id
-    public function getHotelByNameAndCity(string $name, int $cityId): Collection
+    public function deleteHotel($id)
     {
-        return $this->hotelRepository->getHotelByNameAndCity($name, $cityId);
+        $hotel = Hotel::findOrFail($id);
+        $this->authorizeUser($hotel);
+        $hotel->delete();
     }
 
-    // Tạo khách sạn mới
-    public function createHotel(array $data): Hotel
+    private function authorizeUser(Hotel $hotel)
     {
-        return $this->hotelRepository->create($data);
+        $user = Auth::user();
+        if ($user->role !== 'admin' && $hotel->user_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
     }
 
-    // Cập nhật khách sạn
-    public function updateHotel(int $id, array $data): bool
+    private function validateHotel(array $data, $id = null)
     {
-        return $this->hotelRepository->update($id, $data);
-    }
+        $rules = [
+            'name' => 'required|string|max:255',
+            'name_jp' => 'nullable|string|max:255',
+            'code' => 'required|string|max:50|unique:hotels,code' . ($id ? ",$id" : ""),
+            'city_id' => 'required|exists:cities,id',
+            'email' => 'required|email',
+            'telephone' => 'required|string',
+            'fax' => 'required|string',
+            'address_1' => 'required|string',
+            'address_2' => 'nullable|string',
+        ];
 
-    // Xóa khách sạn
-    public function deleteHotel(int $id): bool
-    {
-        return $this->hotelRepository->delete($id);
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
     }
 }

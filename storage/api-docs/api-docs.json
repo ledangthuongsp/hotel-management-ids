@@ -155,6 +155,228 @@
                 }
             }
         },
+        "/hotels": {
+            "get": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Lấy danh sách tất cả khách sạn",
+                "operationId": "54cf891af66ecd8bfd0a6d26b1cc8fc8",
+                "responses": {
+                    "200": {
+                        "description": "Danh sách khách sạn"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Tạo mới khách sạn",
+                "operationId": "c1cbc2652ea15a2c9bfd3c1f25f626f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "code",
+                                    "city_id",
+                                    "email",
+                                    "telephone",
+                                    "address_1"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Hotel ABC"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "ABC123"
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "hotel@example.com"
+                                    },
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "0123456789"
+                                    },
+                                    "address_1": {
+                                        "type": "string",
+                                        "example": "123 Main Street"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Khách sạn được tạo thành công"
+                    },
+                    "400": {
+                        "description": "Dữ liệu không hợp lệ"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/hotels/{id}": {
+            "get": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Lấy thông tin chi tiết của một khách sạn",
+                "operationId": "d4df977fc1607e690c780433e7768e22",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của khách sạn",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thông tin khách sạn"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Cập nhật thông tin khách sạn",
+                "operationId": "cc2283757f80f315975e0905e7f22f64",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của khách sạn",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "city_id": {
+                                        "type": "integer"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "telephone": {
+                                        "type": "string"
+                                    },
+                                    "address_1": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Xóa khách sạn",
+                "operationId": "88e31a04f111dff503c04d3326977b01",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của khách sạn",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Xóa thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/profile": {
             "put": {
                 "tags": [
@@ -252,6 +474,9 @@
                     "201": {
                         "description": "Tạo quyền thành công"
                     },
+                    "400": {
+                        "description": "Yêu cầu sai"
+                    },
                     "403": {
                         "description": "Không có quyền"
                     }
@@ -284,11 +509,11 @@
                     "200": {
                         "description": "Xóa thành công"
                     },
-                    "403": {
-                        "description": "Không có quyền"
-                    },
                     "404": {
                         "description": "Không tìm thấy quyền"
+                    },
+                    "403": {
+                        "description": "Không có quyền"
                     }
                 },
                 "security": [
@@ -665,6 +890,10 @@
         {
             "name": "Authentication",
             "description": "API liên quan đến đăng nhập và xác thực"
+        },
+        {
+            "name": "Hotels",
+            "description": "Hotel Management API"
         },
         {
             "name": "Profile",
