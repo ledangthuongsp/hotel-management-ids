@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Notifications\Notifiable;
 
-class User extends Model
+class User extends Model implements AuthenticatableContract
 {
-    use HasFactory, HasApiTokens, SoftDeletes;
+    use HasFactory, HasApiTokens, SoftDeletes, Authenticatable,Notifiable;
 
     protected $fillable = [
         'first_name',

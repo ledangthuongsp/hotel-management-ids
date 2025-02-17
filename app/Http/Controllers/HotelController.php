@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\HotelService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Support\Facades\Auth;
 /**
  * @OA\Tag(name="Hotels", description="Hotel Management API")
  */
@@ -28,11 +28,30 @@ class HotelController extends Controller
      *     @OA\Response(response=200, description="Danh sách khách sạn")
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->hotelService->getAllHotels());
-    }
+        try {
+            $perPage = $request->input('per_page', 10);
+            $hotels = $this->hotelService->getAllHotels()->paginate($perPage); // Gọi paginate() đúng cách
 
+            return response()->json([
+                'message' => 'Hotels fetched successfully',
+                'data' => $hotels->items(),
+                'pagination' => [
+                    'total' => $hotels->total(),
+                    'per_page' => $hotels->perPage(),
+                    'current_page' => $hotels->currentPage(),
+                    'last_page' => $hotels->lastPage(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
+    }
     /**
      * @OA\Get(
      *     path="/hotels/{id}",
@@ -68,6 +87,7 @@ class HotelController extends Controller
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="name_jp", type="string", nullable=true),
      *             @OA\Property(property="code", type="string"),
+     *             @OA\Property(property="user_id", type="integer"), 
      *             @OA\Property(property="city_id", type="integer"),
      *             @OA\Property(property="email", type="string"),
      *             @OA\Property(property="telephone", type="string"),
@@ -76,13 +96,20 @@ class HotelController extends Controller
      *             @OA\Property(property="address_2", type="string", nullable=true)
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Khách sạn được tạo thành công")
+     *     @OA\Response(response=200, description="Khách sạn được tạo thành công")
      * )
      */
     public function store(Request $request): JsonResponse
     {
-        $hotel = $this->hotelService->createHotel($request->all());
-        return response()->json(['message' => 'Hotel created successfully', 'hotel' => $hotel], 201);
+        try{
+            $hotel = $this->hotelService->createHotel($request->all());
+            return response()->json(['message' => 'Hotel created successfully', 'hotel' => $hotel], 201);
+        }
+        catch(\Exception $e)
+        {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
     }
 
     /**
@@ -103,6 +130,7 @@ class HotelController extends Controller
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="name_jp", type="string", nullable=true),
      *             @OA\Property(property="code", type="string"),
+     *             @OA\Property(property="user_id", type="integer"), 
      *             @OA\Property(property="city_id", type="integer"),
      *             @OA\Property(property="email", type="string"),
      *             @OA\Property(property="telephone", type="string"),

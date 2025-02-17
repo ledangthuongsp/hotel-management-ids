@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Hotel extends Model
 {
     use SoftDeletes;
-    protected $filltable = [
+    protected $fillable = [
         'name',
         'name_jp',
         'code',

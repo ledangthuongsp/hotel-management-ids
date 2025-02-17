@@ -9,10 +9,23 @@ use Illuminate\Validation\ValidationException;
 class HotelService
 {
     public function getAllHotels()
-    {
+    {   
         $user = Auth::user();
-        return $user->role === 'admin' ? Hotel::all() : Hotel::where('user_id', $user->id)->get();
+
+        if (!$user) {
+            throw new \Exception("User not authenticated.");
+        }
+
+        if (!isset($user->role)) {
+            throw new \Exception("User role is undefined.");
+        }
+
+        // Trả về Query Builder để có thể gọi paginate()
+        return ($user->role === 'admin') 
+            ? Hotel::orderBy('id', 'desc')  // Không dùng get()
+            : Hotel::where('user_id', $user->id)->orderBy('id', 'desc'); // Không dùng get()
     }
+
 
     public function getHotelById($id)
     {
@@ -57,7 +70,8 @@ class HotelService
         $rules = [
             'name' => 'required|string|max:255',
             'name_jp' => 'nullable|string|max:255',
-            'code' => 'required|string|max:50|unique:hotels,code' . ($id ? ",$id" : ""),
+            'code' => 'required|string|max:50|unique:hotels,code',
+            'user_id'=> 'required|exists:users,id',
             'city_id' => 'required|exists:cities,id',
             'email' => 'required|email',
             'telephone' => 'required|string',

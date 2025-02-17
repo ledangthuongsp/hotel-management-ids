@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*', // Loại trừ tất cả các route bắt đầu với 'stripe/'
+            'webhook/receive', // Loại trừ route cụ thể 'webhook/receive'
+            // Thêm các route khác nếu cần
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -165,9 +165,6 @@
                 "responses": {
                     "200": {
                         "description": "Danh sách khách sạn"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -197,28 +194,36 @@
                                 ],
                                 "properties": {
                                     "name": {
+                                        "type": "string"
+                                    },
+                                    "name_jp": {
                                         "type": "string",
-                                        "example": "Hotel ABC"
+                                        "nullable": true
                                     },
                                     "code": {
-                                        "type": "string",
-                                        "example": "ABC123"
+                                        "type": "string"
+                                    },
+                                    "user_id": {
+                                        "type": "integer"
                                     },
                                     "city_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                        "type": "integer"
                                     },
                                     "email": {
-                                        "type": "string",
-                                        "example": "hotel@example.com"
+                                        "type": "string"
                                     },
                                     "telephone": {
-                                        "type": "string",
-                                        "example": "0123456789"
+                                        "type": "string"
+                                    },
+                                    "fax": {
+                                        "type": "string"
                                     },
                                     "address_1": {
+                                        "type": "string"
+                                    },
+                                    "address_2": {
                                         "type": "string",
-                                        "example": "123 Main Street"
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -227,14 +232,8 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Khách sạn được tạo thành công"
-                    },
-                    "400": {
-                        "description": "Dữ liệu không hợp lệ"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -268,9 +267,6 @@
                     },
                     "404": {
                         "description": "Không tìm thấy"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -304,8 +300,15 @@
                                     "name": {
                                         "type": "string"
                                     },
+                                    "name_jp": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
                                     "code": {
                                         "type": "string"
+                                    },
+                                    "user_id": {
+                                        "type": "integer"
                                     },
                                     "city_id": {
                                         "type": "integer"
@@ -316,8 +319,15 @@
                                     "telephone": {
                                         "type": "string"
                                     },
+                                    "fax": {
+                                        "type": "string"
+                                    },
                                     "address_1": {
                                         "type": "string"
+                                    },
+                                    "address_2": {
+                                        "type": "string",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -328,46 +338,6 @@
                 "responses": {
                     "200": {
                         "description": "Cập nhật thành công"
-                    },
-                    "404": {
-                        "description": "Không tìm thấy"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Hotels"
-                ],
-                "summary": "Xóa khách sạn",
-                "operationId": "88e31a04f111dff503c04d3326977b01",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID của khách sạn",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Xóa thành công"
-                    },
-                    "404": {
-                        "description": "Không tìm thấy"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     }
                 },
                 "security": [
