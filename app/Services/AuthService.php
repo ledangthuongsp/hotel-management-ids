@@ -31,8 +31,9 @@ class AuthService
 
         // Trả về token và thông tin người dùng
         return [
-            'id' => $user->id,
-            'token' => $user->createToken('API Token')->plainTextToken
+            'user' => $user,
+            'token' => $user->createToken('API Token')->plainTextToken,
+            'role'=>$user->role->name,
         ];
     }
 

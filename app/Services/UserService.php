@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\Auth; // 🔥 IMPORT AUTH
 
 class UserService
 {
+
+    public function getAllUser($id)
+    {
+        try
+        {
+
+        }
+        catch(\Exception $e){
+            return response()->json([
+                'message'=>'Error fetching',
+                'error'=>$e->getMessage()
+            ]);
+        }
+    }
     public function getUser($id)
     {
         try {

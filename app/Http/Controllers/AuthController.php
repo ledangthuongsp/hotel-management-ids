@@ -6,7 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\RegisterRequest;
 
 /**
@@ -50,11 +50,20 @@ class AuthController extends Controller
      *     @OA\Response(response=422, description="Validation lỗi")
      * )
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request)
     {
         $data = $this->authService->login($request->validated());
-        return response()->json($data);
+        
+        Auth::login($data['user']);
+        // Nếu request từ API (có header 'Accept: application/json') -> Trả về JSON
+        if ($request->expectsJson()) {
+            return response()->json($data);
+        }
+
+        // Nếu request từ Blade frontend -> Redirect về dashboard
+        return redirect()->route('hotels');
     }
+
     /**
      * @OA\Post(
      *     path="/register",
