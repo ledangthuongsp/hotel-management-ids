@@ -30,4 +30,25 @@ class Hotel extends Model
     {
         return $this->belongsTo(User::class);
     }
+    // Phương thức tìm kiếm linh hoạt
+    public function scopeSearch($query, $filters)
+    {
+        if (!empty($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
+        if (!empty($filters['code'])) {
+            $query->where('code', 'like', '%' . $filters['code'] . '%');
+        }
+
+        if (!empty($filters['city_id'])) {
+            $query->whereHas('city', function ($q) use ($filters) {
+                // So sánh trực tiếp với city_id thay vì dùng 'like'
+                $q->where('id', '=', $filters['city_id']);
+            });
+        }
+
+        return $query;
+    }
+
 }

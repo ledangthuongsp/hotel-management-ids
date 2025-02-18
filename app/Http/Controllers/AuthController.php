@@ -61,7 +61,7 @@ class AuthController extends Controller
         }
 
         // Nếu request từ Blade frontend -> Redirect về dashboard
-        return redirect()->route('dashboard');
+        return redirect()->route('hotels');
     }
 
     /**

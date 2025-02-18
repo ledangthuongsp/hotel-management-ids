@@ -14,14 +14,6 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="hotels-tab" data-toggle="tab" href="#hotels-tab-pane">Hotels</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="users-tab" data-toggle="tab" href="#users-tab-pane">User List</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile-tab-pane">Profile Settings</a>
-                </li>
-            </ul>
-
             <!-- Tab Content -->
             <div class="tab-content mt-3" id="tab-content">
                 <!-- Hotels Tab -->
@@ -77,30 +69,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- User List Tab -->
-                <div class="tab-pane fade" id="users-tab-pane">
-                    <h3>User List</h3>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-list">
-                            <tr><td colspan="4">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Profile Settings Tab -->
-                <div class="tab-pane fade" id="profile-tab-pane">
-                    <h3>Profile Settings</h3>
-                    <!-- Add profile settings form here -->
-                </div>
             </div>
         </div>
     </div>
@@ -129,6 +97,63 @@
                         cityDropdown.appendChild(option);
                     });
                 });
+        }
+        // Tạo khách sạn mới
+        function openCreateHotelModal() {
+            $('#createHotelModal').modal('show');  // Mở modal khi bấm vào nút
+        }
+        // Tạo khách sạn mới
+        function createHotel() {
+            // Lấy giá trị từ các input field, kiểm tra nếu null thì gán chuỗi rỗng
+            let name = document.getElementById('hotel-name').value || '';
+            let code = document.getElementById('hotel-code').value || '';
+            let city = document.getElementById('hotel-city').value || '';
+            let email = document.getElementById('hotel-email').value || '';
+            let telephone = document.getElementById('hotel-telephone').value || '';
+            let address_1 = document.getElementById('hotel-address-1').value || '';
+            let address_2 = document.getElementById('hotel-address-2').value || '';
+            let fax = document.getElementById('hotel-fax').value || '';
+            let name_jp = document.getElementById('hotel-name-jp').value || ''; // Nếu name_jp null thì gán chuỗi rỗng
+
+            // Kiểm tra xem các trường bắt buộc có rỗng không
+            if (!name || !code || !city || !email || !telephone || !address_1) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            // Gửi thông tin khách sạn mới tới API
+            fetch('/api/hotels', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    code: code,
+                    city: city,
+                    email: email,
+                    telephone: telephone,
+                    address_1: address_1,
+                    address_2: address_2,  // Có thể là null hoặc chuỗi rỗng
+                    fax: fax,               // Có thể là null hoặc chuỗi rỗng
+                    name_jp: name_jp,       // Có thể là null hoặc chuỗi rỗng
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('Hotel created successfully!');
+                    $('#createHotelModal').modal('hide');  // Đóng modal sau khi tạo thành công
+                    fetchHotels();  // Tải lại danh sách khách sạn
+                } else {
+                    alert('Failed to create hotel');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating hotel:', error);
+                alert('Error creating hotel');
+            });
         }
 
         // Fetch danh sách khách sạn
@@ -189,7 +214,7 @@
                 document.getElementById('prev-page').disabled = (data.pagination.current_page === 1);
                 document.getElementById('next-page').disabled = (data.pagination.current_page === data.pagination.last_page);
             })
-            .catch(error => {
+            .catch(error => {   
                 console.error('Error fetching hotels:', error);
                 document.getElementById('hotels-list').innerHTML = '<tr><td colspan="7">Failed to load data</td></tr>';
             });
@@ -198,34 +223,53 @@
 
         // Chỉnh sửa khách sạn
         function editHotel(id) {
-            fetch(`/api/hotels/${id}`)
-                .then(response => {
-                    if (response.status !== 200) {
-                        throw new Error('Failed to fetch hotel data');
-                    }
-                    return response.json();
-                })
-                .then(hotel => {
-                    document.getElementById('edit-hotel-id').value = hotel.id;
-                    document.getElementById('edit-hotel-name').value = hotel.name;
-                    document.getElementById('edit-hotel-email').value = hotel.email;
-                    document.getElementById('edit-hotel-telephone').value = hotel.telephone;
-                    document.getElementById('edit-hotel-address').value = hotel.address_1;
-                    $('#editHotelModal').modal('show');
-                })
-                .catch(error => {
-                    alert(error.message);
-                    console.error('Error:', error);
-                });
-        }
+            fetch(`/api/hotels/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.status !== 200) {
+                    throw new Error('Failed to fetch hotel data');
+                }
+                return response.json();
+            })
+            .then(hotel => {
+                // Cập nhật các trường trong modal với dữ liệu khách sạn
+                document.getElementById('edit-hotel-id').value = hotel.id;
+                document.getElementById('edit-hotel-name').value = hotel.name;
+                document.getElementById('edit-hotel-name-jp').value = hotel.name_jp;
+                document.getElementById('edit-hotel-code').value = hotel.code;
+                document.getElementById('edit-hotel-user-id').value = hotel.user_id;
+                document.getElementById('edit-hotel-city-id').value = hotel.city_id;
+                document.getElementById('edit-hotel-email').value = hotel.email;
+                document.getElementById('edit-hotel-telephone').value = hotel.telephone;
+                document.getElementById('edit-hotel-fax').value = hotel.fax;
+                document.getElementById('edit-hotel-address-1').value = hotel.address_1;
+                document.getElementById('edit-hotel-address-2').value = hotel.address_2;
 
-        // Lưu thông tin khách sạn sau khi chỉnh sửa
+                // Mở modal
+                $('#editHotelModal').modal('show');
+            })
+            .catch(error => {
+                alert(error.message);
+                console.error('Error:', error);
+            });
+        }
+                // Lưu thông tin khách sạn sau khi chỉnh sửa
         function saveHotel() {
             let id = document.getElementById('edit-hotel-id').value;
             let name = document.getElementById('edit-hotel-name').value;
+            let name_jp = document.getElementById('edit-hotel-name-jp').value;
+            let code = document.getElementById('edit-hotel-code').value;
+            let user_id = document.getElementById('edit-hotel-user-id').value;
+            let city_id = document.getElementById('edit-hotel-city-id').value;
             let email = document.getElementById('edit-hotel-email').value;
             let telephone = document.getElementById('edit-hotel-telephone').value;
-            let address = document.getElementById('edit-hotel-address').value;
+            let fax = document.getElementById('edit-hotel-fax').value;
+            let address_1 = document.getElementById('edit-hotel-address-1').value;
+            let address_2 = document.getElementById('edit-hotel-address-2').value;
 
             fetch(`/api/hotels/${id}`, {
                 method: 'PUT',
@@ -233,24 +277,43 @@
                     'Authorization': 'Bearer ' + localStorage.getItem('token'),
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, email, telephone, address })
+                body: JSON.stringify({
+                    name, 
+                    name_jp, 
+                    code, 
+                    user_id, 
+                    city_id, 
+                    email, 
+                    telephone, 
+                    fax, 
+                    address_1, 
+                    address_2
+                })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Hotel updated successfully!');
-                    $('#editHotelModal').modal('hide');
-                    fetchHotels();
-                } else {
-                    alert('Failed to update hotel!');
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => { // Nếu có lỗi, trả lại thông tin lỗi
+                        throw new Error(error.message || "Failed to update hotel.");
+                    });
                 }
+                return response.json(); // Chuyển đổi dữ liệu nếu thành công
             })
-            .catch(error => {
-                alert('Error updating hotel!');
+            .then(data => {
+                // Đóng modal sau khi thành công
+                $('#editHotelModal').modal('hide');  // Đóng modal
+
+                // Đảm bảo modal đã đóng rồi mới reload danh sách khách sạn
+                setTimeout(function() {
+                    // Cập nhật lại danh sách khách sạn
+                    fetchHotels();  // Reload danh sách khách sạn để hiển thị thông tin mới
+                }, 500);  // Delay 500ms để modal đóng hoàn toàn
+            })
+            .catch(error => { 
+                // Hiển thị thông báo lỗi nếu có lỗi
+                alert('Error updating hotel: ' + error.message);
                 console.error(error);
             });
         }
-
         // Xóa khách sạn
         function confirmDelete(hotelId) {
             if (confirm("Are you sure you want to delete this hotel?")) {

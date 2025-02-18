@@ -6,10 +6,19 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\AddressController;
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('register', [AuthController::class, 'register'])->name('register');
+Route::get('/hotels/search', [HotelController::class, 'search']);
+
 Route::get('cities', [CityController::class, 'getAllCities'])->name('cities');
+
+// API to fetch cities, districts, and wards
+Route::get('get-all-cities', [AddressController::class, 'getAllCities'])->name('get-all-cities');
+Route::get('districts/{cityId}', [AddressController::class, 'getDistrictsByCityId'])->name('districts');
+Route::get('wards/{districtId}', [AddressController::class, 'getWards'])->name('wards');
+
 // Các route cần xác thực
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('profile', [ProfileController::class, 'updateProfile']);

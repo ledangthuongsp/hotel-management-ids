@@ -1,0 +1,9 @@
+.is-invalid {
+    border: 2px solid red !important;
+    background-color: #ffe5e5;
+}
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}

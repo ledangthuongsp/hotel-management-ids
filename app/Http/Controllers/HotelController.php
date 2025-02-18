@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\HotelService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Hotel;
 /**
  * @OA\Tag(name="Hotels", description="Hotel Management API")
  */
@@ -32,8 +32,10 @@ class HotelController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 10);
-            $hotels = $this->hotelService->getAllHotels()->paginate($perPage); // Gọi paginate() đúng cách
+            $query = $this->hotelService->getAllHotels();
 
+            // Lấy danh sách tất cả các hodel phân trang
+            $hotels = $query->paginate($perPage);
             return response()->json([
                 'message' => 'Hotels fetched successfully',
                 'data' => $hotels->items(),
@@ -49,9 +51,10 @@ class HotelController extends Controller
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile()
-            ], 500);
+            ]);
         }
     }
+
     /**
      * @OA\Get(
      *     path="/hotels/{id}",
@@ -71,7 +74,17 @@ class HotelController extends Controller
      */
     public function show($id): JsonResponse
     {
-        return response()->json($this->hotelService->getHotelById($id));
+        try
+        {
+            return response()->json($this->hotelService->getHotelById($id));
+        }
+        catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
     }
 
     /**
@@ -107,7 +120,12 @@ class HotelController extends Controller
         }
         catch(\Exception $e)
         {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
         }
 
     }
@@ -144,13 +162,78 @@ class HotelController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $hotel = $this->hotelService->updateHotel($id, $request->all());
-        return response()->json(['message' => 'Hotel updated successfully', 'hotel' => $hotel]);
+        try {
+            $hotel = Hotel::findOrFail($id);
+
+            // Validate data from frontend using the HotelService
+            $this->hotelService->validateHotel($request->all(), $id);  // Call validateHotel from the service
+
+            // Update the hotel
+            $hotel->update($request->all());
+
+            return response()->json(['message' => 'Hotel updated successfully', 'hotel' => $hotel], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
     }
+
 
     public function destroy($id): JsonResponse
     {
-        $this->hotelService->deleteHotel($id);
-        return response()->json(['message' => 'Hotel deleted successfully'], 204);
+        try {
+            $this->hotelService->deleteHotel($id);
+            return response()->json(['message' => 'Hotel deleted successfully'], 204);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
+        // --- UI Routes ---
+    }
+    // Hiển thị danh sách khách sạn (UI)
+    public function ui_index()
+    {
+        $hotels = Hotel::all();
+        return view('hotels.index', compact('hotels'));
+    }
+
+    // Hiển thị chi tiết khách sạn (UI)
+    public function ui_show($id)
+    {
+        $hotel = Hotel::findOrFail($id);
+        return view('hotels.show', compact('hotel'));
+    }
+
+    // Hiển thị form tạo khách sạn mới (UI)
+    public function ui_create()
+    {
+        return view('hotels.create');
+    }
+
+    // Hiển thị form chỉnh sửa khách sạn (UI)
+    public function ui_edit($id)
+    {
+        $hotel = Hotel::findOrFail($id);
+        return view('hotels.edit', compact('hotel'));
+    }
+    public function search(Request $request)
+    {
+        // Lấy dữ liệu tìm kiếm từ request
+        $filters = $request->only(['name', 'code', 'city_id']);
+
+        // Áp dụng scope tìm kiếm
+        $hotels = Hotel::search($filters)->get();
+
+        // Trả về kết quả dưới dạng JSON
+        return response()->json($hotels);
     }
 }

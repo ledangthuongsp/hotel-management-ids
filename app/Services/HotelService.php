@@ -65,12 +65,13 @@ class HotelService
         }
     }
 
-    private function validateHotel(array $data, $id = null)
+    public function validateHotel(array $data, $id = null)
     {
+        // Quy tắc xác thực
         $rules = [
             'name' => 'required|string|max:255',
             'name_jp' => 'nullable|string|max:255',
-            'code' => 'required|string|max:50|unique:hotels,code',
+            'code' => 'required|string|max:50|unique:hotels,code,' . $id, // Bỏ qua check nếu đang cập nhật chính khách sạn
             'user_id'=> 'required|exists:users,id',
             'city_id' => 'required|exists:cities,id',
             'email' => 'required|email',
@@ -80,9 +81,12 @@ class HotelService
             'address_2' => 'nullable|string',
         ];
 
+        // Thực hiện xác thực dữ liệu
         $validator = Validator::make($data, $rules);
+
         if ($validator->fails()) {
-            throw new ValidationException($validator);
+            throw new ValidationException($validator); // Nếu xác thực không thành công, ném lỗi
         }
     }
+    
 }

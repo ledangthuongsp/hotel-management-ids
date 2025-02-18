@@ -58,7 +58,7 @@
             .then(data => {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    window.location.href = "/dashboard";
+                    window.location.href = "/hotels";
                 } else {
                     document.getElementById('error-message').innerText = data.error || "Đăng nhập thất bại!";
                 }
