@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\UserService;
-use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\UserRequest\CreateUserRequest;
+use App\Http\Requests\UserRequest\SearchUserRequest;
 use Illuminate\Routing\Controller;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UserRequest\UpdateUserRequest;
 use App\Models\User;
 /**
  * @OA\Tag(
@@ -157,12 +158,43 @@ class UserController extends Controller
     {
         return $this->userService->deleteUser($id);
     }
+
+
+    // Hiển thị danh sách khách sạn (UI)
     public function ui_index()
     {
-        $user = User::all();
+        $hotels = User::all();
+        return view('hotels.index', compact('hotels'));
     }
-    public function ui_store()
+
+    // Hiển thị chi tiết khách sạn (UI)
+    public function ui_show($id)
     {
-        
+        $hotel = User::findOrFail($id);
+        return view('hotels.show', compact('hotel'));
+    }
+
+    // Hiển thị form tạo khách sạn mới (UI)
+    public function ui_create()
+    {
+        return view('hotels.create');
+    }
+
+    // Hiển thị form chỉnh sửa khách sạn (UI)
+    public function ui_edit($id)
+    {
+        $hotel = User::findOrFail($id);
+        return view('hotels.edit', compact('hotel'));
+    }
+    public function search(SearchUserRequest $request)
+    {
+        // Lấy dữ liệu tìm kiếm từ request
+        $filters = $request->only(['name', 'code', 'city_id']);
+
+        // Áp dụng scope tìm kiếm
+        $hotels = User::search($filters)->get();
+
+        // Trả về kết quả dưới dạng JSON
+        return response()->json($hotels);
     }
 }
