@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Model implements AuthenticatableContract
 {
-    use HasFactory, HasApiTokens, SoftDeletes, Authenticatable,Notifiable;
+    use HasFactory, HasApiTokens, SoftDeletes, Authenticatable, Notifiable;
 
     protected $fillable = [
         'first_name',

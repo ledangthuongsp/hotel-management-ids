@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CheckUserRole;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Đăng ký alias cho middleware
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'check.role'=>CheckUserRole::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'stripe/*', // Loại trừ tất cả các route bắt đầu với 'stripe/'

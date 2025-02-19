@@ -21,7 +21,7 @@ class HotelService
         }
 
         // Trả về Query Builder để có thể gọi paginate()
-        return ($user->role === 'admin') 
+        return ($user->role_id === '1') 
             ? Hotel::orderBy('id', 'desc')  // Không dùng get()
             : Hotel::where('user_id', $user->id)->orderBy('id', 'desc'); // Không dùng get()
     }
