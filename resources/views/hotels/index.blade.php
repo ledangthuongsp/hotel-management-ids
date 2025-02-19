@@ -72,6 +72,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Add new Hotel-->
     <div class="modal fade" id="createHotelModal" tabindex="-1" role="dialog" aria-labelledby="createHotelModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -362,7 +364,7 @@
                     name: name,
                     name_jp: name_jp,  // Bắt buộc nhập
                     code: code,
-                    city: cityId,
+                    city_id: cityId,
                     email: email,
                     telephone: telephone,
                     address_1: fullAddress,  // Sử dụng địa chỉ đầy đủ
