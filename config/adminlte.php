@@ -301,35 +301,49 @@ return [
     'menu' => [
         ['header' => 'MAIN NAVIGATION'],
 
+        // Mục menu cho tất cả người dùng (dù là admin hay member)
         [
             'text' => 'Hotel Management',
             'url'  => '/hotels',
             'icon' => 'fas fa-hotel',
-            'active' => ['hotels', 'hotels/*'], // Giữ active khi vào các trang con
-        ],
-        [
-            'text' => 'User Management',
-            'url'  => '/users',
-            'icon' => 'fas fa-users',
-            'active' => ['users', 'users/*'],
+            'active' => ['hotels', 'hotels/*'],
         ],
         [
             'text' => 'Profile',
             'url'  => '/profile',
             'icon' => 'fas fa-user',
+            'id'=> 'tab-profile'
         ],
         [
             'text' => 'Password',
             'url'  => '/change-password',
             'icon' => 'fas fa-lock',
+            'id'=> 'tab-password'
+        ],
+
+        // Menu chỉ admin mới thấy
+        [
+            'text' => 'User Management',
+            'url'  => '/users',
+            'icon' => 'fas fa-users',
+            'active' => ['users', 'users/*'],
+            'can' => 'view-admin-menu' // Phân quyền
         ],
         [
+            'text' => 'Role Management',
+            'url'  => '/roles',
+            'icon' => 'fas fa-cogs',
+            'can' => 'view-admin-menu' // Phân quyền
+        ],
+
+        [
             'text' => 'Logout',
-            'url'  => 'logout',
+            'url'  => '/logout',
             'icon' => 'fas fa-sign-out-alt',
             'topnav_right' => true,
         ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

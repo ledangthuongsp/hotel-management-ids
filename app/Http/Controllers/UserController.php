@@ -6,6 +6,7 @@ use App\Services\UserService;
 use App\Http\Requests\CreateUserRequest;
 use Illuminate\Routing\Controller;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\User;
 /**
  * @OA\Tag(
  *     name="User",
@@ -155,5 +156,13 @@ class UserController extends Controller
     public function deleteUser($id)
     {
         return $this->userService->deleteUser($id);
+    }
+    public function ui_index()
+    {
+        $user = User::all();
+    }
+    public function ui_store()
+    {
+        
     }
 }

@@ -24,7 +24,7 @@ Route::get('register', function () {
 Route::post('register', [AuthController::class, 'register'])->name('register.post');
 
 // Các route yêu cầu xác thực
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'check.role'])->group(function () {
 
     // Route quản lý khách sạn
     Route::get('/hotels', [HotelController::class, 'ui_index'])->name('hotels.index');
