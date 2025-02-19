@@ -72,6 +72,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Add new Hotel-->
     <div class="modal fade" id="createHotelModal" tabindex="-1" role="dialog" aria-labelledby="createHotelModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -362,7 +364,7 @@
                     name: name,
                     name_jp: name_jp,  // Bắt buộc nhập
                     code: code,
-                    city: cityId,
+                    city_id: cityId,
                     email: email,
                     telephone: telephone,
                     address_1: fullAddress,  // Sử dụng địa chỉ đầy đủ
@@ -502,6 +504,14 @@
             let fax = document.getElementById('edit-hotel-fax').value;
             let address_1 = document.getElementById('edit-hotel-address-1').value;
             let address_2 = document.getElementById('edit-hotel-address-2').value;
+            let tax_code = document.getElementById('edit-hotel-tax-code').value;
+            let company_name = document.getElementById('edit-hotel-company-name').value;
+
+            // Đảm bảo rằng không có trường bắt buộc bị bỏ trống
+            if (!name || !code || !user_id || !city_id || !email || !telephone || !address_1 || !tax_code) {
+                alert("Please fill in all required fields.");
+                return;
+            }
 
             fetch(`/api/hotels/${id}`, {
                 method: 'PUT',
@@ -519,33 +529,32 @@
                     telephone, 
                     fax, 
                     address_1, 
-                    address_2
+                    address_2,
+                    tax_code, // Lưu lại mã thuế
+                    company_name,
                 })
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(error => { // Nếu có lỗi, trả lại thông tin lỗi
+                    return response.json().then(error => {
                         throw new Error(error.message || "Failed to update hotel.");
                     });
                 }
-                return response.json(); // Chuyển đổi dữ liệu nếu thành công
+                return response.json();
             })
             .then(data => {
                 // Đóng modal sau khi thành công
-                $('#editHotelModal').modal('hide');  // Đóng modal
-
-                // Đảm bảo modal đã đóng rồi mới reload danh sách khách sạn
+                $('#editHotelModal').modal('hide');
                 setTimeout(function() {
-                    // Cập nhật lại danh sách khách sạn
-                    fetchHotels();  // Reload danh sách khách sạn để hiển thị thông tin mới
-                }, 500);  // Delay 500ms để modal đóng hoàn toàn
+                    fetchHotels();  // Reload danh sách khách sạn
+                }, 500);
             })
-            .catch(error => { 
-                // Hiển thị thông báo lỗi nếu có lỗi
+            .catch(error => {
                 alert('Error updating hotel: ' + error.message);
                 console.error(error);
             });
         }
+
         // Xóa khách sạn
         function confirmDelete(hotelId) {
             if (confirm("Are you sure you want to delete this hotel?")) {
@@ -643,5 +652,58 @@
                 }
             })
         }
+        function viewHotel(hotelId) {
+        // Gửi request đến API để lấy dữ liệu hotel
+            fetch(`/api/hotels/${hotelId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                }   
+            })
+            .then(response => {
+                // Kiểm tra xem response có thành công không
+                if (!response.ok) {
+                    throw new Error('Failed to fetch hotel details');
+                }
+                return response.json(); // Chuyển response thành JSON
+            })
+            .then(hotel => {
+                // Kiểm tra và hiển thị dữ liệu hotel vào các thẻ trong modal
+                const cityName = citiesMap[hotel.city_id] || 'N/A';
+
+                // Kiểm tra trước khi thay đổi các phần tử
+                const elements = [
+                    { id: 'view-hotel-city', value: cityName },
+                    { id: 'view-hotel-code', value: hotel.code || 'N/A' },
+                    { id: 'view-hotel-name-en', value: hotel.name || 'N/A' },
+                    { id: 'view-hotel-name-jp', value: hotel.name_jp || 'N/A' },
+                    { id: 'view-hotel-email', value: hotel.email || 'N/A' },
+                    { id: 'view-hotel-telephone', value: hotel.telephone || 'N/A' },
+                    { id: 'view-hotel-fax', value: hotel.fax || 'N/A' },
+                    { id: 'view-hotel-address1', value: hotel.address_1 || 'N/A' },
+                    { id: 'view-hotel-address2', value: hotel.address_2 || 'N/A' },
+                    { id: 'view-hotel-company', value: hotel.company_name || 'N/A' },
+                    { id: 'view-hotel-tax-code', value: hotel.tax_code || 'N/A' }
+                ];
+
+                // Cập nhật các phần tử
+                elements.forEach(element => {
+                    const el = document.getElementById(element.id);
+                    if (el) {
+                        el.innerText = element.value;
+                    }
+                });
+
+                // Mở modal
+                $('#viewHotelModal').modal('show');
+            })
+            .catch(error => {
+                console.error('Error fetching hotel details:', error);
+                alert('Failed to load hotel details');
+            });
+        }
+
+
     </script>
 @endsection

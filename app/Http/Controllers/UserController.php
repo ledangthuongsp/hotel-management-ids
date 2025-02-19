@@ -8,6 +8,8 @@ use App\Http\Requests\UserRequest\SearchUserRequest;
 use Illuminate\Routing\Controller;
 use App\Http\Requests\UserRequest\UpdateUserRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 /**
  * @OA\Tag(
  *     name="User",
@@ -21,9 +23,42 @@ class UserController extends Controller
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
-        $this->middleware('auth:api'); // 🔥 Bảo vệ API bằng Authentication
     }
+    /**
+     * @OA\Get(
+     *     path="/users",
+     *     summary="Lấy danh sách tất cả khách sạn",
+     *     tags={"User"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Danh sách khách sạn")
+     * )
+     */
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 10);
+            $query = $this->userService->getAllUser();
 
+            // Lấy danh sách tất cả các hodel phân trang
+            $users = $query->paginate($perPage);
+            return response()->json([
+                'message' => 'Users fetched successfully',
+                'data' => $users->items(),
+                'pagination' => [
+                    'total' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
+    }
     /**
      * @OA\Get(
      *     path="/users/{id}",
@@ -163,28 +198,29 @@ class UserController extends Controller
     // Hiển thị danh sách khách sạn (UI)
     public function ui_index()
     {
-        $hotels = User::all();
-        return view('hotels.index', compact('hotels'));
+        $users = User::all();
+        // Kiểm tra nếu có dữ liệu
+        return view('users.index', compact('users'));
     }
 
     // Hiển thị chi tiết khách sạn (UI)
     public function ui_show($id)
     {
-        $hotel = User::findOrFail($id);
-        return view('hotels.show', compact('hotel'));
+        $user = User::findOrFail($id);
+        return view('users.show', compact('user'));
     }
 
     // Hiển thị form tạo khách sạn mới (UI)
     public function ui_create()
     {
-        return view('hotels.create');
+        return view('users.create');
     }
 
     // Hiển thị form chỉnh sửa khách sạn (UI)
     public function ui_edit($id)
     {
-        $hotel = User::findOrFail($id);
-        return view('hotels.edit', compact('hotel'));
+        $user = User::findOrFail($id);
+        return view('users.edit', compact('user'));
     }
     public function search(SearchUserRequest $request)
     {
@@ -192,9 +228,9 @@ class UserController extends Controller
         $filters = $request->only(['name', 'code', 'city_id']);
 
         // Áp dụng scope tìm kiếm
-        $hotels = User::search($filters)->get();
+        $users = User::search($filters)->get();
 
         // Trả về kết quả dưới dạng JSON
-        return response()->json($hotels);
+        return response()->json($users);
     }
 }

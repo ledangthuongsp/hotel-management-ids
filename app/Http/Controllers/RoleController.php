@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RoleRequest\RoleRequest;
+use App\Http\Requests\Reole\RoleRequest;
 use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
