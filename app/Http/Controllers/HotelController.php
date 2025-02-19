@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateHotelRequest;
 use App\Services\HotelService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Hotel;
+use Laravel\Ui\Presets\React;
+
 /**
  * @OA\Tag(name="Hotels", description="Hotel Management API")
  */

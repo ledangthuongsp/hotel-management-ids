@@ -21,7 +21,7 @@ class HotelService
         }
 
         // Trả về Query Builder để có thể gọi paginate()
-        return ($user->role_id === '1') 
+        return ($user->role_id == 1) 
             ? Hotel::orderBy('id', 'desc')  // Không dùng get()
             : Hotel::where('user_id', $user->id)->orderBy('id', 'desc'); // Không dùng get()
     }
@@ -38,7 +38,9 @@ class HotelService
     {
         $data['user_id'] = Auth::id();
         $this->validateHotel($data);
-        return Hotel::create($data);
+        $hotel = Hotel::create($data);
+
+        return $hotel;
     }
 
     public function updateHotel($id, $data)
@@ -76,7 +78,7 @@ class HotelService
             'city_id' => 'required|exists:cities,id',
             'email' => 'required|email',
             'telephone' => 'required|string',
-            'fax' => 'required|string',
+            'fax' => 'nullable|string',
             'address_1' => 'required|string',
             'address_2' => 'nullable|string',
         ];
