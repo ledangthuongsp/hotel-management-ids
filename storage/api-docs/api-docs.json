@@ -493,53 +493,30 @@
                 ]
             }
         },
-        "/seeder/create-role": {
-            "post": {
+        "/users": {
+            "get": {
                 "tags": [
-                    "Seeder"
+                    "User"
                 ],
-                "summary": "Create Admin Role (No Token Required)",
-                "operationId": "4a343968e09043d441516e2cc7970c46",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Admin"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Full Access"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
+                "summary": "Lấy danh sách tất cả khách sạn",
+                "operationId": "7e2f5799553ec93c9c43e2a58490d447",
+                "responses": {
+                    "200": {
+                        "description": "Danh sách khách sạn"
                     }
                 },
-                "responses": {
-                    "201": {
-                        "description": "Role created successfully"
-                    },
-                    "400": {
-                        "description": "Admin role already exists"
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
-                }
-            }
-        },
-        "/seeder/register": {
+                ]
+            },
             "post": {
                 "tags": [
-                    "Seeder"
+                    "User"
                 ],
-                "summary": "Register User as Admin (No Token Required)",
-                "operationId": "e4c5f60a38aa0503b2320aa940def5b9",
+                "summary": "Create a new user",
+                "operationId": "49b25cdfd1cc549029c3dfd6f39b4d60",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -550,7 +527,8 @@
                                     "last_name",
                                     "user_name",
                                     "email",
-                                    "password"
+                                    "password",
+                                    "role_id"
                                 ],
                                 "properties": {
                                     "first_name": {
@@ -569,6 +547,9 @@
                                     "password": {
                                         "type": "string",
                                         "format": "password"
+                                    },
+                                    "role_id": {
+                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -578,26 +559,32 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "User registered successfully"
+                        "description": "User created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "Validation error"
                     }
-                }
-            }
-        },
-        "/test": {
-            "get": {
-                "tags": [
-                    "Test"
-                ],
-                "summary": "API Test Endpoint",
-                "operationId": "8c679225a1e8478d550461677ce1a9cf",
-                "responses": {
-                    "200": {
-                        "description": "Test Successful"
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
-                }
+                ]
             }
         },
         "/users/{id}": {
@@ -768,83 +755,6 @@
                     }
                 ]
             }
-        },
-        "/users": {
-            "post": {
-                "tags": [
-                    "User"
-                ],
-                "summary": "Create a new user",
-                "operationId": "49b25cdfd1cc549029c3dfd6f39b4d60",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "first_name",
-                                    "last_name",
-                                    "user_name",
-                                    "email",
-                                    "password",
-                                    "role_id"
-                                ],
-                                "properties": {
-                                    "first_name": {
-                                        "type": "string"
-                                    },
-                                    "last_name": {
-                                        "type": "string"
-                                    },
-                                    "user_name": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password"
-                                    },
-                                    "role_id": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "User created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "user": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
         }
     },
     "components": {
@@ -876,14 +786,6 @@
         {
             "name": "User",
             "description": "User Management APIs"
-        },
-        {
-            "name": "Seeder",
-            "description": "Seeder"
-        },
-        {
-            "name": "Test",
-            "description": "Test"
         }
     ],
     "security": {

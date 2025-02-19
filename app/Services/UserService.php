@@ -13,11 +13,16 @@ use Illuminate\Support\Facades\Auth; // 🔥 IMPORT AUTH
 class UserService
 {
 
-    public function getAllUser($id)
+    public function getAllUser()
     {
         try
         {
+            $user = Auth::user();
 
+        if (!$user) {
+            throw new \Exception("User not authenticated.");
+        }
+        return User::query();
         }
         catch(\Exception $e){
             return response()->json([

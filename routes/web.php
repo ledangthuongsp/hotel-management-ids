@@ -32,4 +32,11 @@ Route::middleware(['auth:sanctum', 'check.role'])->group(function () {
     Route::post('/hotels', [HotelController::class, 'ui_store'])->name('hotels.store');
     Route::get('/hotels/create', [HotelController::class, 'ui_create'])->name('hotels.create');
     Route::put('/hotels/{id}/edit', [HotelController::class, 'ui_edit'])->name('hotels.edit');
+
+    //Route quản lý user
+    Route::get('/users', [UserController::class, 'ui_index'])->name('users.index');
+    Route::get('/users/{id}', [UserController::class, 'ui_show'])->name('users.show');
+    Route::post('/users', [UserController::class, 'ui_store'])->name('users.store');
+    Route::get('/users/create', [UserController::class, 'ui_create'])->name('users.create');
+    Route::put('/users/{id}/edit', [UserController::class, 'ui_edit'])->name('users.edit');
 });

@@ -110,8 +110,8 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
-        'mode' => 'fullscreen',
+        'enabled' => false,
+        'mode' => 'cwrapper',
         'img' => [
             'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
             'alt' => 'AdminLTE Preloader Image',
@@ -158,7 +158,7 @@ return [
     'layout_fixed_navbar' => null,
     'layout_fixed_footer' => null,
     'layout_dark_mode' => null,
-
+    'layout_ajax_tab_loading' => true,
     /*
     |--------------------------------------------------------------------------
     | Authentication Views Classes
@@ -327,13 +327,14 @@ return [
             'url'  => '/users',
             'icon' => 'fas fa-users',
             'active' => ['users', 'users/*'],
-            'can' => 'view-admin-menu' // Phân quyền
+            'can' => 'view-admin-menu', // Phân quyền
+
         ],
         [
             'text' => 'Role Management',
             'url'  => '/roles',
             'icon' => 'fas fa-cogs',
-            'can' => 'view-admin-menu' // Phân quyền
+            'can' => 'view-admin-menu', // Phân quyền
         ],
 
         [

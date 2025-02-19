@@ -7,6 +7,7 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\UserController;
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('register', [AuthController::class, 'register'])->name('register');
@@ -31,6 +32,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/hotels', [HotelController::class, 'store']);
     Route::put('/hotels/{id}', [HotelController::class, 'update']);
     Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
+
+    Route::get('/users', [UserController::class, 'index']);
 });
 
 // Các route yêu cầu xác thực và quyền admin

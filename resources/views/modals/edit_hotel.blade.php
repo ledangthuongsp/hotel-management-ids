@@ -72,6 +72,13 @@
                         <label for="edit-hotel-address-2">Hotel Address 2</label>
                         <input type="text" id="edit-hotel-address-2" name="hotel_address_2" class="form-control">
                     </div>
+
+                    <!-- Tax Code (Required) -->
+                    <div class="form-group">
+                        <label for="edit-hotel-tax-code">Tax Code</label>
+                        <input type="text" id="edit-hotel-tax-code" name="hotel_tax_code" class="form-control" required>
+                    </div>
+
                 </form>
             </div>
             <div class="modal-footer">
