@@ -76,7 +76,12 @@
                     <!-- Tax Code (Required) -->
                     <div class="form-group">
                         <label for="edit-hotel-tax-code">Tax Code</label>
-                        <input type="text" id="edit-hotel-tax-code" name="hotel_tax_code" class="form-control" required>
+                        <input type="text" class="form-control" id="edit-hotel-tax-code" name ="edit-hotel-tax-code" required>
+                    </div>
+                    <!-- Company Name (Required) -->
+                    <div class="form-group">
+                        <label for="edit-hotel-company-name">Company Name</label>
+                        <input type="text" class="form-control" id="edit-hotel-company-name" name="edit-hotel-company-name" required>
                     </div>
 
                 </form>

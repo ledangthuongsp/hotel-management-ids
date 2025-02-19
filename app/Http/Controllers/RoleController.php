@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Reole\RoleRequest;
+use App\Http\Requests\RoleRequest\RoleRequest;
+use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Exception;
-
 /**
  * @OA\Tag(
  *     name="Roles",
@@ -105,5 +105,33 @@ class RoleController extends Controller
             Log::error('Error deleting role: ' . $e->getMessage());
             return response()->json(['message' => 'Role not found'], 404); // 404 khi không tìm thấy role
         }
+    }
+
+    // Hiển thị danh sách khách sạn (UI)
+    public function ui_index()
+    {
+        $roles = Role::all();
+        // Kiểm tra nếu có dữ liệu
+        return view('roles.index', compact('roles'));
+    }
+
+    // Hiển thị chi tiết khách sạn (UI)
+    public function ui_show($id)
+    {
+        $role = Role::findOrFail($id);
+        return view('roles.show', compact('role'));
+    }
+
+    // Hiển thị form tạo khách sạn mới (UI)
+    public function ui_create()
+    {
+        return view('roles.create');
+    }
+
+    // Hiển thị form chỉnh sửa khách sạn (UI)
+    public function ui_edit($id)
+    {
+        $role = Role::findOrFail($id);
+        return view('users.edit', compact('role'));
     }
 }

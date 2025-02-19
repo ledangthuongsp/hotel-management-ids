@@ -1,6 +1,5 @@
 <?php
 namespace App\Services;
-
 use App\Models\Hotel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -81,6 +80,8 @@ class HotelService
             'fax' => 'nullable|string',
             'address_1' => 'required|string',
             'address_2' => 'nullable|string',
+            'tax_code' => 'required|string|max:50', // Thêm quy tắc cho tax_code
+            'company_name' => 'required|string|max:255', // Thêm quy tắc cho company_name
         ];
 
         // Thực hiện xác thực dữ liệu
@@ -90,5 +91,5 @@ class HotelService
             throw new ValidationException($validator); // Nếu xác thực không thành công, ném lỗi
         }
     }
-    
 }
+
