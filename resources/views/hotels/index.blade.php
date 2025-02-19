@@ -151,6 +151,15 @@
                             <label for="hotel-name-jp">Hotel Name (Japanese)</label>
                             <input type="text" class="form-control" id="hotel-name-jp" placeholder="Enter Hotel Name in Japanese">
                         </div>
+                        <div class="form-group">
+                            <label for="hotel-tax-code">Tax Code</label>
+                            <input type="text" class="form-control" id="hotel-tax-code" placeholder="Enter Tax Code" required>
+                        </div>
+                
+                        <div class="form-group">
+                            <label for="hotel-company-name">Company Name</label>
+                            <input type="text" class="form-control" id="hotel-company-name" placeholder="Enter Company Name">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -160,7 +169,28 @@
             </div>
         </div>
     </div>
-    
+    <!-- Modal Confirm Delete -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete Hotel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this hotel? Please type the hotel code <strong id="hotel-code-to-delete"></strong> to confirm.</p>
+                    <input type="text" id="hotel-code-input" class="form-control" placeholder="Enter Hotel Code" required>
+                    <small class="text-danger" id="error-message" style="display:none;">Hotel code does not match!</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteHotel()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modals -->
     @include('modals.view_hotel')
     @include('modals.edit_hotel')
@@ -168,6 +198,7 @@
     <script>
         let currentPage = 1;
         let citiesMap = {}; // Chứa thông tin các thành phố
+        let hotelToDelete = null; // Biến lưu thông tin khách sạn đang bị xóa
 
         // Fetch danh sách thành phố
         // Hàm fetch danh sách thành phố và cập nhật dropdown
@@ -343,6 +374,8 @@
             let streetAddress = document.getElementById('hotel-address-1').value.trim() || '';
             let address_2 = document.getElementById('hotel-address-2').value.trim() || '';
             let fax = document.getElementById('hotel-fax').value.trim() || '';
+            let taxCode = document.getElementById('hotel-tax-code').value.trim();
+            let companyName = document.getElementById('hotel-company-name').value.trim();
 
             // Kiểm tra nếu các trường bắt buộc bị thiếu
             if (!name || !name_jp || !code || !cityId || !districtId || !wardId || !email || !telephone || !streetAddress) {
@@ -369,7 +402,9 @@
                     telephone: telephone,
                     address_1: fullAddress,  // Sử dụng địa chỉ đầy đủ
                     address_2: address_2, 
-                    fax: fax  
+                    fax: fax , 
+                    tax_code: taxCode,
+                    company_name: companyName,
                 })
             })
             .then(response => response.json())
@@ -438,7 +473,7 @@
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="viewHotel(${hotel.id})">View</button>
                             <button class="btn btn-warning btn-sm" onclick="editHotel(${hotel.id})">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${hotel.id})">Delete</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${hotel.id}, '${hotel.code}')">Delete</button>
                         </td>
                     </tr>`;
                     hotelsList.innerHTML += row;
@@ -556,18 +591,48 @@
         }
 
         // Xóa khách sạn
-        function confirmDelete(hotelId) {
-            if (confirm("Are you sure you want to delete this hotel?")) {
-                fetch(`/api/hotels/${hotelId}`, {
+        function confirmDelete(hotelId, hotelCode) {
+            // Lưu thông tin khách sạn và mã khách sạn
+            hotelToDelete = { id: hotelId, code: hotelCode };
+
+            // Hiển thị mã khách sạn trong modal
+            document.getElementById('hotel-code-to-delete').innerText = hotelCode;
+
+            // Hiển thị modal
+            $('#confirmDeleteModal').modal('show');
+        }
+        function confirmDeleteHotel() {
+            const enteredCode = document.getElementById('hotel-code-input').value.trim();
+
+            // Kiểm tra xem mã nhập vào có đúng không
+            if (enteredCode === hotelToDelete.code) {
+                // Gọi API xóa khách sạn
+                fetch(`/api/hotels/${hotelToDelete.id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Accept': 'application/json'
                     }
-                }).then(() => fetchHotels());
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Hotel deleted successfully!');
+                        fetchHotels();  // Cập nhật lại danh sách khách sạn
+                    } else {
+                        alert('Failed to delete hotel!');
+                    }
+                    $('#confirmDeleteModal').modal('hide');  // Đóng modal
+                })
+                .catch(error => {
+                    console.error('Error deleting hotel:', error);
+                    alert('Error deleting hotel');
+                    $('#confirmDeleteModal').modal('hide');
+                });
+            } else {
+                // Hiển thị thông báo lỗi nếu mã không khớp
+                document.getElementById('error-message').style.display = 'block';
             }
         }
-
         // Load dữ liệu khi trang tải
         document.addEventListener('DOMContentLoaded', function() {
             fetchCities();
@@ -636,7 +701,7 @@
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="viewHotel(${hotel.id})">View</button>
                             <button class="btn btn-warning btn-sm" onclick="editHotel(${hotel.id})">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${hotel.id})">Delete</button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${hotel.id}, '${hotel.code}')">Delete</button>
                         </td>
                     </tr>`;
                     hotelsList.innerHTML += row;
