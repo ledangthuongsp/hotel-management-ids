@@ -339,7 +339,7 @@ return [
 
         [
             'text' => 'Logout',
-            'url'  => '/logout',
+            'url'  => '/',
             'icon' => 'fas fa-sign-out-alt',
             'topnav_right' => true,
         ],

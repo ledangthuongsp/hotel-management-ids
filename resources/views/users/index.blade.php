@@ -9,302 +9,318 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
-            <!-- Tab Content -->
-            <div class="tab-content mt-3" id="tab-content">
-                <!-- User Tab -->
-                <div class="tab-pane fade show active" id="users-tab-pane">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">List of Users</h3>
-                            <button class="btn btn-success float-right" onclick="openCreateUserModal()">Add New User</button>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">List of Users</h3>
+                    <button class="btn btn-success float-right" onclick="openCreateUserModal()">Add New User</button>
+                </div>
+                <div class="card-body">
+                    <!-- Search -->
+                    <div class="row mb-3">
+                        <div class="col-mx-3">
+                            <select id="role-filter-dropdown" class="form-control">
+                                <option value="">--Select Role--</option>
+                            </select>
                         </div>
-                        <div class="card-body">
-                            <!-- Search -->
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <div class="dropdown">
-                                        <select id="filter-role" class="form-control">
-                                            <option value="">--Select Role--</option>
-                                            <!-- Dynamically fill roles from backend -->
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="text" id="filter-user-name" class="form-control" placeholder="Name">
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-primary" onclick="searchUsers()">
-                                        <i class="fas fa-search"></i> Search
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Table -->
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Full Name</th>
-                                        <th>User Name</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="users-list">
-                                    <tr><td colspan="6">Loading...</td></tr>
-                                </tbody>
-                            </table>
-
-                            <!-- Pagination -->
-                            <div class="mt-3">
-                                <button id="prev-page" class="btn btn-secondary" onclick="changePage(-1)">Previous</button>
-                                <span id="current-page" class="mx-3">Page 1</span>
-                                <button id="next-page" class="btn btn-secondary" onclick="changePage(1)">Next</button>
-                            </div>
+                        
+                        <div class="col-mx-6">
+                            <input type="text" id="search-email" class="form-control" placeholder="Search Email">
                         </div>
+                        <div class="col-mx-6">
+                            <input type="text" id="search-fullname" class="form-control" placeholder="Search Fullname">
+                        </div>
+                        <div class="col-mx-6">
+                            <input type="text" id="search-username" class="form-control" placeholder="Search Username">
+                        </div>
+                        <div class="col-mx-6">
+                            <button class="btn btn-primary" onclick="fetchUsers()">Search</button>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Birth Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-list">
+                            <tr><td colspan="6">Loading...</td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="mt-3">
+                        <button id="prev-page" class="btn btn-secondary" onclick="changePage(-1)">Previous</button>
+                        <span id="current-page" class="mx-3">Page 1</span>
+                        <button id="next-page" class="btn btn-secondary" onclick="changePage(1)">Next</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Create User Modal -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">Add New User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="createUserForm">
-                        <div class="form-group">
-                            <label for="first-name">First Name</label>
-                            <input type="text" class="form-control" id="first-name" placeholder="Enter first name">
-                            <small id="first-name-error" class="form-text text-danger"></small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="last-name">Last Name</label>
-                            <input type="text" class="form-control" id="last-name" placeholder="Enter last name">
-                            <small id="last-name-error" class="form-text text-danger"></small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter email">
-                            <small id="email-error" class="form-text text-danger"></small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Enter password">
-                            <small id="password-error" class="form-text text-danger"></small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="role">Role</label>
-                            <select class="form-control" id="role">
-                                <option value="">--Select Role--</option>
-                                <!-- Dynamically fill roles -->
-                            </select>
-                            <small id="role-error" class="form-text text-danger"></small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveUser()">Save User</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('modals.create_user')
+    @include('modals.view_user')
+    @include('modals.edit_user')
+    @include('modals.delete_user')
 
     <script>
         let currentPage = 1;
-
-        function openCreateUserModal() {
-            $('#createUserModal').modal('show');
-            fetchRoles(); // Load roles dynamically
-        }
-        // Fetch danh sách người dùng
-        function fetchUsers() {
-            let role = document.getElementById('filter-role').value;
-            let userName = document.getElementById('filter-user-name').value;
-
-            // Khởi tạo URL với các tham số tìm kiếm
-            let url = `/api/users?page=${currentPage}&per_page=5`;
-
-            if (role) url += `&role=${role}`;
-            if (userName) url += `&name=${userName}`;
-
-            // Gửi yêu cầu fetch
-            fetch(url, {
+        let roles = [];  // Biến lưu danh sách các vai trò
+        // Fetch roles from API
+        function fetchRoles() {
+            fetch('/api/roles', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token'),
                     'Accept': 'application/json'
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error fetching data: ' + response.status);
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    roles = data;
+                    populateRoleDropdown();  // Cập nhật dropdown
                 }
-                return response.json(); // Chuyển dữ liệu thành JSON
             })
+            .catch(error => console.error('Error fetching roles:', error));
+        }
+        // Populate the role dropdown for searching and creating users
+        function populateRoleDropdown() {
+            let roleDropdown = document.getElementById('role-filter-dropdown');
+            roleDropdown.innerHTML = '<option value="">--Select Role--</option>';  // Reset dropdown
+
+            roles.forEach(role => {
+                roleDropdown.innerHTML += `<option value="${role.id}">${role.name}</option>`;
+            });
+
+            // Cập nhật các role trong modal tạo người dùng
+            let roleCreateDropdown = document.getElementById('role_id');
+            roleCreateDropdown.innerHTML = '<option value="">--Select Role--</option>';
+            roles.forEach(role => {
+                roleCreateDropdown.innerHTML += `<option value="${role.id}">${role.name}</option>`;
+            });
+
+            // Cập nhật các role trong modal chỉnh sửa người dùng
+            let roleEditDropdown = document.getElementById('edit_role_id');
+            roleEditDropdown.innerHTML = '<option value="">--Select Role--</option>';
+            roles.forEach(role => {
+                roleEditDropdown.innerHTML += `<option value="${role.id}">${role.name}</option>`;
+            });
+        }
+        // Hàm mở modal view thông tin người dùng
+        function viewUser(id) {
+            fetch(`/api/users/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.user) {
+                    const user = data.user;
+                    const roleName = user.role ? user.role.name : 'N/A';
+
+                    // Chuyển đổi ngày sinh sang dd/mm/yyyy
+                    const birthDate = user.day_of_birth 
+                        ? new Date(user.day_of_birth).toLocaleDateString('vi-VN') 
+                        : 'N/A';
+
+                    // Kiểm tra avatar (hiển thị default nếu không có)
+                    const avatarUrl = (user.avatar_url === 'default_avatar.png' || !user.avatar_url) 
+                        ? '/images/default_avatar.png' 
+                        : user.avatar_url;
+
+                    // Hiển thị thông tin trong modal View User
+                    document.getElementById('view_first_name').innerText = user.first_name;
+                    document.getElementById('view_last_name').innerText = user.last_name;
+                    document.getElementById('view_user_name').innerText = user.user_name;
+                    document.getElementById('view_email').innerText = user.email;
+                    document.getElementById('view_role').innerText = roleName;
+                    document.getElementById('view_day_of_birth').innerText = birthDate; // Hiển thị dd/mm/yyyy
+                    document.getElementById('view_avatar').src = avatarUrl; // Hiển thị avatar
+
+                    // Mở modal view
+                    $('#viewUserModal').modal('show');
+                }
+            })
+            .catch(error => console.error('Error fetching user data:', error));
+        }
+        function openCreateUserModal(){
+            $('#createUserModal').modal('show');  // Đóng modal sau khi tạo thành công
+        }
+        // Fetch Users
+        // Fetch Users from API and display them
+        function fetchUsers() {
+            let name = document.getElementById('search-fullname').value;
+            let email = document.getElementById('search-email').value;
+            let username = document.getElementById('search-username').value;
+            let roleId = document.getElementById('role-filter-dropdown').value;
+
+            let url = `/api/users?page=${currentPage}`;
+            if (name) url += `&name=${name}`;
+            if (email) url += `&email=${email}`;
+            if (username) url += `&user_name=${username}`;
+            if (roleId) url += `&role_id=${roleId}`;
+
+            fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            })
+            .then(response => response.json())
             .then(data => {
                 let usersList = document.getElementById('users-list');
                 usersList.innerHTML = '';
 
-                // Kiểm tra nếu dữ liệu không có hoặc data.data không phải là mảng
                 if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
-                    usersList.innerHTML = '<tr><td colspan="6">No users found</td></tr>';
+                    usersList.innerHTML = '<tr><td colspan="6">No data found</td></tr>';
                     return;
                 }
 
-                // Duyệt qua từng người dùng trong data.data và hiển thị thông tin
                 data.data.forEach(user => {
-                    let roleName = user.role ? user.role.name : 'No role'; // Hiển thị tên vai trò
+                    // Format ngày tháng năm
+                    const formattedDate = formatDate(user.day_of_birth || user.created_at);
 
-                    let row = `<tr>
-                                <td>${user.id}</td>
-                                <td>${user.first_name} ${user.last_name}</td>
-                                <td>${user.user_name}</td>
-                                <td>${user.email}</td>
-                                <td>${roleName}</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm" onclick="viewUser(${user.id})">View</button>
-                                    <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})">Edit</button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
-                                </td>
-                            </tr>`;
-                    usersList.innerHTML += row;
+                    // Kiểm tra avatar, nếu là default thì hiển thị avatar mặc định
+
+                    let roleName = user.role ? user.role.name : 'N/A';  // Kiểm tra nếu role có tồn tại
+                    let fullName = user.first_name + ' ' + user.last_name;
+                    
+                    usersList.innerHTML += `
+                        <tr>
+                            <td>${fullName}</td>
+                            <td>${user.user_name}</td>
+                            <td>${user.email}</td>
+                            <td>${roleName}</td>
+                            <td>${formattedDate}</td>
+                            <td>
+                                <button class="btn btn-info btn-sm" onclick="viewUser(${user.id})">View</button>
+                                <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="confirmDelete(${user.id}, '${fullName}')">Delete</button>
+                            </td>
+                        </tr>`;
                 });
 
-                // Cập nhật phân trang
                 document.getElementById('current-page').innerText = `Page ${data.pagination.current_page}`;
-                document.getElementById('prev-page').disabled = (data.pagination.current_page === 1);
-                document.getElementById('next-page').disabled = (data.pagination.current_page === data.pagination.last_page);
             })
-            .catch(error => {   
-                console.error('Error fetching users:', error);
-                document.getElementById('users-list').innerHTML = '<tr><td colspan="6">Failed to load data</td></tr>';
-            });
+            .catch(error => console.error('Error fetching users:', error));
         }
+        // Helper function to format date (only date, no time)
+        function formatDate(dateString) {
+            if (!dateString) return ''; // Nếu không có ngày, trả về chuỗi rỗng
 
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Đảm bảo 2 chữ số
+            const day = String(date.getDate()).padStart(2, '0'); // Đảm bảo 2 chữ số
 
-        // Call the fetchUsers function to load data on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            fetchUsers();
-        });
-
-
-        function fetchRoles() {
-            fetch('/api/roles')
-                .then(response => response.json())
-                .then(data => {
-                    const roleSelect = document.getElementById('role');
-                    roleSelect.innerHTML = '<option value="">--Select Role--</option>';
-                    data.forEach(role => {
-                        const option = document.createElement('option');
-                        option.value = role.id;
-                        option.textContent = role.name;
-                        roleSelect.appendChild(option);
-                    });
-                });
+            return `${year}-${month}-${day}`; // Trả về định dạng YYYY-MM-DD
         }
-
-        function searchUsers() {
-            const role = document.getElementById('filter-role').value;
-            const name = document.getElementById('filter-user-name').value;
-            const url = `/api/users?role=${role}&name=${name}&page=${currentPage}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const usersList = document.getElementById('users-list');
-                    usersList.innerHTML = '';
-                    data.users.forEach(user => {
-                        const row = `<tr>
-                                        <td>${user.id}</td>
-                                        <td>${user.first_name} ${user.last_name}</td>
-                                        <td>${user.user_name}</td>
-                                        <td>${user.email}</td>
-                                        <td>${user.role}</td>
-                                        <td>
-                                            <button class="btn btn-info btn-sm" onclick="viewUser(${user.id})">View</button>
-                                            <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})">Edit</button>
-                                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
-                                        </td>
-                                    </tr>`;
-                        usersList.innerHTML += row;
-                    });
-
-                    document.getElementById('current-page').textContent = `Page ${data.pagination.current_page}`;
-                    document.getElementById('prev-page').disabled = data.pagination.current_page === 1;
-                    document.getElementById('next-page').disabled = data.pagination.current_page === data.pagination.last_page;
-                });
-        }
-
-        function saveUser() {
-            const form = document.getElementById('createUserForm');
-            const formData = new FormData(form);
-            const user = Object.fromEntries(formData);
-
-            fetch('/api/users', {
-                method: 'POST',
-                body: JSON.stringify(user),
-                headers: {
-                    'Content-Type': 'application/json'
+        // Hàm mở modal chỉnh sửa thông tin người dùng
+        function editUser(id) {
+            fetch(`/api/users/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.user) {
+                    const user = data.user;
+                    const avatarUrl = (user.avatar_url === 'default_avatar.png' || !user.avatar_url) 
+                        ? '/images/default_avatar.png' 
+                        : user.avatar_url;
+                    document.getElementById('edit_user_id').value = user.id;
+                    document.getElementById('edit_first_name').value = user.first_name;
+                    document.getElementById('edit_last_name').value = user.last_name;
+                    document.getElementById('edit_user_name').value = user.user_name;
+                    document.getElementById('edit_email').value = user.email;
+                    document.getElementById('edit_role_id').value = user.role_id;
+                    document.getElementById('edit_avatar').src = avatarUrl;
+                    // ⚡ Fix lỗi ngày tháng - Chuyển về `YYYY-MM-DD`
+                    if (user.day_of_birth) {
+                        let date = new Date(user.day_of_birth);
+                        let formattedDate = date.toISOString().split('T')[0]; // Chuyển thành `YYYY-MM-DD`
+                        document.getElementById('edit_day_of_birth').value = formattedDate;
+                    } else {
+                        document.getElementById('edit_day_of_birth').value = ''; // Nếu null, hiển thị rỗng
+                    }
+                    // Mở modal chỉnh sửa
+                    $('#editUserModal').modal('show');
                 }
+            })
+            .catch(error => console.error('Error fetching user data:', error));
+        }
+
+
+        // Hàm lưu thông tin chỉnh sửa người dùng
+        function saveUser() {
+            let userId = document.getElementById('edit_user_id').value; // Kiểm tra xem có user_id hay không
+            let url = userId ? `/api/users/${userId}` : "/api/users";
+            let method = userId ? "PUT" : "POST";
+
+            let userData = {
+                first_name: document.getElementById('edit_first_name').value,
+                last_name: document.getElementById('edit_last_name').value,
+                user_name: document.getElementById('edit_user_name').value,
+                email: document.getElementById('edit_email').value,
+                day_of_birth: formatDate(document.getElementById('edit_day_of_birth').value), // Chuyển về yyyy-mm-dd
+                role_id: document.getElementById('edit_role_id').value
+            };
+
+            // Xóa thông báo lỗi trước khi gửi request
+            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.errors) {
-                    handleFormErrors(data.errors);
+                    for (const [field, messages] of Object.entries(data.errors)) {
+                        document.getElementById(`edit_${field}_error`).innerText = messages.join(', ');
+                    }
                 } else {
-                    alert('User created successfully');
-                    $('#createUserModal').modal('hide');
-                    searchUsers();
+                    // Đóng modal sau khi thành công
+                    $('#editUserModal').modal('hide');
+                    document.getElementById('editUserForm').reset();
+                    fetchUsers(); // Load lại danh sách user
                 }
             })
-            .catch(error => {
-                console.error(error);
-                alert('Error saving user');
-            });
+            .catch(error => console.error("Error saving user:", error));
         }
 
-        function handleFormErrors(errors) {
-            Object.keys(errors).forEach(field => {
-                const errorMessage = errors[field][0];
-                document.getElementById(`${field}-error`).textContent = errorMessage;
-            });
-        }
 
-        function viewUser(id) {
-            alert('Viewing user ' + id);
-        }
 
-        function editUser(id) {
-            alert('Editing user ' + id);
-        }
-
-        function deleteUser(id) {
-            if (confirm('Are you sure you want to delete this user?')) {
-                fetch(`/api/users/${id}`, { method: 'DELETE' })
-                    .then(response => {
-                        if (response.ok) {
-                            alert('User deleted successfully');
-                            searchUsers();
-                        } else {
-                            alert('Error deleting user');
-                        }
-                    })
-                    .catch(error => console.error(error));
+        // Confirm Delete User
+        function confirmDelete(id, name) {
+            if (confirm(`Are you sure you want to delete ${name}?`)) {
+                fetch(`/api/users/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchUsers();
+                });
             }
         }
+
+        // Change Page
+        function changePage(direction) {
+            currentPage += direction;
+            fetchUsers();
+        }
+
+        // Load Users on Page Load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchUsers();
+            fetchRoles(); // Fetch roles to populate dropdowns
+        });
     </script>
 @endsection

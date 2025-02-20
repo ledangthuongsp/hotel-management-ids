@@ -106,14 +106,15 @@ class HotelController extends Controller
      *             @OA\Property(property="telephone", type="string"),
      *             @OA\Property(property="fax", type="string"),
      *             @OA\Property(property="address_1", type="string"),
-     *             @OA\Property(property="address_2", type="string", nullable=true)
-     *             @OA\Property(property="tax_code",type="string")
-     *             @OA\Property(property="company_name",type="string")
+     *             @OA\Property(property="address_2", type="string", nullable=true), 
+     *             @OA\Property(property="tax_code", type="string"),
+     *             @OA\Property(property="company_name", type="string")
      *         )
      *     ),
      *     @OA\Response(response=200, description="Khách sạn được tạo thành công")
      * )
      */
+
     public function store(Request $request): JsonResponse
     {
         try{
@@ -156,8 +157,8 @@ class HotelController extends Controller
      *             @OA\Property(property="telephone", type="string"),
      *             @OA\Property(property="fax", type="string"),
      *             @OA\Property(property="address_1", type="string"),
-     *             @OA\Property(property="address_2", type="string", nullable=true)
-     *             @OA\Property(property="tax_code",type="string")
+     *             @OA\Property(property="address_2", type="string", nullable=true),
+     *             @OA\Property(property="tax_code",type="string"),
      *             @OA\Property(property="company_name",type="string")
      *         )
      *     ),

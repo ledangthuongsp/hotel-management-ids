@@ -8,7 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\PasswordController;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('register', [AuthController::class, 'register'])->name('register');
 Route::get('/hotels/search', [HotelController::class, 'search']);
@@ -24,6 +24,7 @@ Route::get('wards/{districtId}', [AddressController::class, 'getWards'])->name('
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('profile', [ProfileController::class, 'updateProfile']);
     Route::get('roles', [RoleController::class, 'listRoles']);
+        Route::get('/roles/{id}', [RoleController::class, 'findRoleById']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -34,12 +35,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
 
     Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}', [UserController::class, 'getUser']);
+    Route::post('/users', [UserController::class, 'createUser']);
+    Route::put('/users/{id}', [UserController::class, 'updateUser']);
+    Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
+
+    Route::get('/profile', [ProfileController::class, 'getProfile']); // Lấy thông tin profile
+    Route::post('/profile', [ProfileController::class, 'updateProfile']); // Cập nhật thông tin cá nhân
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar']); // Cập nhật avatar riêng
+
+    Route::post('/change-password', [PasswordController::class, 'changePassword']);
+
 });
 
 // Các route yêu cầu xác thực và quyền admin
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::post('roles', [RoleController::class, 'createRole']);
-    Route::delete('roles/{id}', [RoleController::class, 'deleteRole']);
+    Route::get('/roles', [RoleController::class, 'listRoles']);
+    Route::post('/roles', [RoleController::class, 'createRole']);
+    Route::delete('/roles/{id}', [RoleController::class, 'deleteRole']);
     
 });
 Route::post('/import-locations', [LocationController::class, 'import']);

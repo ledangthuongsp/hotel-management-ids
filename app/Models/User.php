@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
@@ -36,5 +35,31 @@ class User extends Model implements AuthenticatableContract
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    // Scope tìm kiếm linh hoạt
+    public function scopeSearch($query, $filters)
+    {
+        if (!empty($filters['name'])) {
+            // Tìm kiếm theo tên (first_name + last_name)
+            $query->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $filters['name'] . '%']);
+        }
+
+        if (!empty($filters['user_name'])) {
+            // Tìm kiếm theo user_name
+            $query->where('user_name', 'like', '%' . $filters['user_name'] . '%');
+        }
+
+        if (!empty($filters['email'])) {
+            // Tìm kiếm theo email
+            $query->where('email', 'like', '%' . $filters['email'] . '%');
+        }
+
+        if (!empty($filters['role_id'])) {
+            // Tìm kiếm theo role_id
+            $query->where('role_id', '=', $filters['role_id']);
+        }
+
+        return $query;
     }
 }
