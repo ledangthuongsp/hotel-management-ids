@@ -10,7 +10,8 @@ use Exception;
 use Carbon\Carbon;
 use App\Models\Hotel;
 use Illuminate\Support\Facades\Auth; // 🔥 IMPORT AUTH
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Validation\Rule;
 class UserService
 {
 
@@ -50,38 +51,75 @@ class UserService
         }
     }
 
-
     public function createUser(Request $request)
     {
         try {
-            // Lấy thông tin admin tạo user
+            // ✅ Validate dữ liệu trước khi tạo user
+            $validatedData = $request->validate([
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'user_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('users', 'user_name')->where(function ($query) {
+                        return $query->whereNull('deleted_at');
+                    })
+                ],
+                'email' => [
+                    'required',
+                    'email',
+                    Rule::unique('users', 'email')->where(function ($query) {
+                        return $query->whereNull('deleted_at');
+                    })
+                ],
+                'password' => 'required|string|min:6',
+                'day_of_birth' => 'nullable|date',
+                'role_id' => 'required|integer|exists:roles,id',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+            
+
+            // ✅ Lấy thông tin admin tạo user
             $adminId = Auth::check() ? Auth::id() : null;
             $adminName = Auth::check() ? Auth::user()->user_name : 'system';
 
+            // ✅ Upload avatar lên Cloudinary nếu có
+            $avatarUrl = 'default_avatar.png'; // Ảnh mặc định
+            if ($request->hasFile('avatar')) {
+                $uploadedFile = Cloudinary::upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'user_avatars',
+                ]);
+                $avatarUrl = $uploadedFile->getSecurePath(); // Lấy URL sau khi upload
+            }
+
+            // ✅ Tạo user
             $user = User::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'user_name' => $request->user_name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'day_of_birth' => $request->day_of_birth ?? '1990-01-01',
-                'avatar_url' => $request->avatar_url ?? 'default_avatar.png',
-                'role_id' => $request->role_id,
-                'create_user' => $adminId,  // Lưu ID admin tạo user
-                'create_name' => $adminName // Lưu tên admin tạo user
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'user_name' => $validatedData['user_name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']),
+                'day_of_birth' => $validatedData['day_of_birth'] ?? '1990-01-01',
+                'avatar_url' => $avatarUrl, // Lưu URL avatar
+                'role_id' => $validatedData['role_id'],
+                'create_user' => $adminId,
+                'create_name' => $adminName
             ]);
 
             return response()->json([
                 'message' => 'User created successfully',
                 'user' => $user
             ], 201);
-        } catch (Exception $e) {
+
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error creating user',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
 
     public function updateUser(Request $request, $id)
     {
@@ -116,36 +154,34 @@ class UserService
     }
 
     public function deleteUser($id)
-{
-    try {
-        $user = User::findOrFail($id);
-        
-        // Kiểm tra xem người dùng có khách sạn nào không
-        $hotelCount = Hotel::where('user_id', $user->id)->count();
-        
-        // Nếu người dùng có khách sạn thì không cho phép xóa
-        if ($hotelCount > 0) {
-            return response()->json(['message' => 'User cannot be deleted because they are associated with one or more hotels.'], 400);
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            // Kiểm tra xem người dùng có khách sạn nào không
+            $hotelCount = Hotel::where('user_id', $user->id)->count();
+            
+            // Nếu người dùng có khách sạn thì không cho phép xóa
+            if ($hotelCount > 0) {
+                return response()->json([
+                    'message' => 'User cannot be deleted because they are associated with one or more hotels.'
+                ], 400);
+            }
+
+            // ✅ Thực hiện soft delete đúng cách
+            $user->delete();
+
+            return response()->json([
+                'message' => 'User deleted successfully'
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'User not found'], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error deleting user',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Tiến hành xóa người dùng nếu không có khách sạn liên quan
-        $user->update([
-            'deleted_at' => Carbon::now(),
-            'delete_user' => Auth::id() ?? 1,
-            'delete_name' => Auth::user() ? Auth::user()->user_name : 'system',
-            'del_flg' => 1
-        ]);
-
-        return response()->json(['message' => 'User deleted successfully'], 200);
-
-    } catch (ModelNotFoundException $e) {
-        return response()->json(['message' => 'User not found'], 404);
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => 'Error deleting user',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
-
 }
