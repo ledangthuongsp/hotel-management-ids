@@ -231,22 +231,22 @@
                     const avatarUrl = (user.avatar_url === 'default_avatar.png' || !user.avatar_url) 
                         ? '/images/default_avatar.png' 
                         : user.avatar_url;
+                    // Hiển thị thông tin user vào modal
                     document.getElementById('edit_user_id').value = user.id;
                     document.getElementById('edit_first_name').value = user.first_name;
                     document.getElementById('edit_last_name').value = user.last_name;
                     document.getElementById('edit_user_name').value = user.user_name;
                     document.getElementById('edit_email').value = user.email;
                     document.getElementById('edit_role_id').value = user.role_id;
-                    document.getElementById('edit_avatar').src = avatarUrl;
-                    // ⚡ Fix lỗi ngày tháng - Chuyển về `YYYY-MM-DD`
+                    document.getElementById('edit_avatar_preview').src = avatarUrl;
+
+                    // Chuyển đổi ngày sinh sang `YYYY-MM-DD`
                     if (user.day_of_birth) {
                         let date = new Date(user.day_of_birth);
-                        let formattedDate = date.toISOString().split('T')[0]; // Chuyển thành `YYYY-MM-DD`
-                        document.getElementById('edit_day_of_birth').value = formattedDate;
-                    } else {
-                        document.getElementById('edit_day_of_birth').value = ''; // Nếu null, hiển thị rỗng
+                        document.getElementById('edit_day_of_birth').value = date.toISOString().split('T')[0];
                     }
-                    // Mở modal chỉnh sửa
+
+                    // Mở modal edit
                     $('#editUserModal').modal('show');
                 }
             })
@@ -254,50 +254,47 @@
         }
 
 
+
         // Hàm lưu thông tin chỉnh sửa người dùng
-        function saveUser() {
-            let userId = document.getElementById('edit_user_id').value; // Kiểm tra xem có user_id hay không
-            let url = userId ? `/api/users/${userId}` : "/api/users";
-            let method = userId ? "PUT" : "POST";
+        async function saveUser() {
+            let userId = document.getElementById('edit_user_id').value;
+            let avatarFile = document.getElementById('edit_avatar').files[0];
 
             let userData = {
                 first_name: document.getElementById('edit_first_name').value,
                 last_name: document.getElementById('edit_last_name').value,
                 user_name: document.getElementById('edit_user_name').value,
                 email: document.getElementById('edit_email').value,
-                day_of_birth: formatDate(document.getElementById('edit_day_of_birth').value), // Chuyển về yyyy-mm-dd
+                day_of_birth: document.getElementById('edit_day_of_birth').value,
                 role_id: document.getElementById('edit_role_id').value
             };
 
-            // Xóa thông báo lỗi trước khi gửi request
-            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
-
-            fetch(url, {
-                method: method,
+            let response = await fetch(`/api/users/${userId}`, {
+                method: "PUT",
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token'),
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(userData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.errors) {
-                    for (const [field, messages] of Object.entries(data.errors)) {
-                        document.getElementById(`edit_${field}_error`).innerText = messages.join(', ');
-                    }
-                } else {
-                    // Đóng modal sau khi thành công
-                    $('#editUserModal').modal('hide');
-                    document.getElementById('editUserForm').reset();
-                    fetchUsers(); // Load lại danh sách user
+            });
+
+            let data = await response.json();
+
+            if (data.errors) {
+                for (const [field, messages] of Object.entries(data.errors)) {
+                    document.getElementById(`edit_${field}_error`).innerText = messages.join(', ');
                 }
-            })
-            .catch(error => console.error("Error saving user:", error));
+            } else {
+                if (avatarFile) {
+                    await uploadUserAvatar(userId, avatarFile);  // ✅ Upload avatar nếu có ảnh mới
+                }
+
+                $('#editUserModal').modal('hide'); // Đóng modal sau khi thành công
+                document.getElementById('editUserForm').reset();
+                fetchUsers(); // Load lại danh sách user
+            }
         }
-
-
 
         // Confirm Delete User
         function confirmDelete(id, name) {
@@ -315,6 +312,21 @@
         function changePage(direction) {
             currentPage += direction;
             fetchUsers();
+        }
+        async function uploadUserAvatar(userId, file) {
+            let formData = new FormData();
+            formData.append('avatar', file);
+
+            let response = await fetch(`/api/users/${userId}/upload-avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: formData
+            });
+
+            let data = await response.json();
+            return data.avatar_url;
         }
 
         // Load Users on Page Load
