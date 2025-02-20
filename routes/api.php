@@ -45,6 +45,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar']); // Cập nhật avatar riêng
 
     Route::post('/change-password', [PasswordController::class, 'changePassword']);
+    Route::post('/users/{id}/upload-avatar', [UserController::class, 'uploadUserAvatar']);
+
 
 });
 

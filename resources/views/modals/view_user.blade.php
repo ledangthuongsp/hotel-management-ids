@@ -9,9 +9,10 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div>
-                    <img id="view_avatar" width="150" height="150" class="img-fluid mx-auto d-block" alt="Avatar">
+                <div style="display: flex; justify-content: center; align-items: center;">
+                    <img id="view_avatar" width="150" height="150" class="rounded-circle" alt="Avatar">
                 </div>
+                
                 <div class="form-group">
                     <label for="view_first_name">First Name</label>
                     <p id="view_first_name"></p>

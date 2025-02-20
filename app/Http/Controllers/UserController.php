@@ -10,6 +10,7 @@ use App\Http\Requests\UserRequest\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 /**
  * @OA\Tag(
  *     name="User",
@@ -226,8 +227,64 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function uploadUserAvatar(Request $request, $id)
+    {
+        try {
+            // ✅ Kiểm tra user có tồn tại không
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
 
+            // ✅ Kiểm tra request có file không
+            if (!$request->hasFile('avatar')) {
+                return response()->json(['message' => 'No file uploaded'], 400);
+            }
 
+            $file = $request->file('avatar');
+
+            // ✅ Kiểm tra file có hợp lệ không
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'Invalid file upload'], 400);
+            }
+
+            // ✅ Kiểm tra MIME type
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+            if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                return response()->json(['message' => 'Unsupported file type'], 400);
+            }
+
+            // ✅ Upload ảnh lên Cloudinary
+            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'user_avatars',
+                'options' => [
+                    'verify' => false // Tắt SSL Verification (chỉ dùng để debug!)
+                ]
+            ]);
+
+            // ✅ Lấy URL ảnh từ Cloudinary
+            $avatarUrl = $uploadedFile->getSecurePath();
+
+            // ✅ Cập nhật avatar mới vào database
+            $user->update(['avatar_url' => $avatarUrl]);
+
+            return response()->json([
+                'message' => 'Avatar uploaded successfully',
+                'avatar_url' => $avatarUrl,
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error uploading avatar',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
+    }
+
+    
     // Hiển thị danh sách khách sạn (UI)
     public function ui_index()
     {

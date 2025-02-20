@@ -9,7 +9,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="createUserForm">
+                <form id="createUserForm" enctype="multipart/form-data">
                     @csrf
                     <!-- Avatar -->
                     <div class="text-center mb-3">
@@ -71,7 +71,7 @@
 </div>
 
 <script>
-    // Preview avatar khi chọn ảnh
+    // ✅ Preview ảnh khi chọn file
     document.getElementById('avatar').addEventListener('change', function(event) {
         let reader = new FileReader();
         reader.onload = function() {
@@ -79,11 +79,26 @@
         }
         reader.readAsDataURL(event.target.files[0]);
     });
-    function openCreateUserModal() {
-        $('#createUserModal').modal('show');
+
+    async function uploadUserAvatar(userId, file) {
+        let formData = new FormData();
+        formData.append('avatar', file);
+
+        let response = await fetch(`/api/users/${userId}/upload-avatar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: formData
+        });
+
+        let data = await response.json();
+        return data.avatar_url;
     }
 
-    function createUser() {
+    async function createUser() {
+        let avatarFile = document.getElementById('avatar').files[0];
+        
         let userData = {
             first_name: document.getElementById('first_name').value,
             last_name: document.getElementById('last_name').value,
@@ -94,7 +109,7 @@
             role_id: document.getElementById('role_id').value
         };
 
-        fetch('/api/users', {
+        let response = await fetch('/api/users', {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -102,13 +117,24 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(userData)
-        })
-        .then(response => response.json())
-        .then(data => {
+        });
+
+        let data = await response.json();
+
+        if (data.user) {
+            let userId = data.user.id;
+
+            // Nếu có avatar, upload sau khi tạo user
+            if (avatarFile) {
+                await uploadUserAvatar(userId, avatarFile);
+            }
+
             $('#createUserModal').modal('hide');
             document.getElementById('createUserForm').reset();
             fetchUsers();
-        })
-        .catch(error => console.error("Error creating user:", error));
+        } else {
+            console.error("Error creating user:", data);
+        }
     }
 </script>
+

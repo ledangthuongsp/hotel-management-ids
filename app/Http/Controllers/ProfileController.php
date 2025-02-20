@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ProfileRequest;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-
+use Illuminate\Support\Facades\Log;
 class ProfileController extends Controller
 {
     /**
@@ -19,6 +19,7 @@ class ProfileController extends Controller
             if (!$user) {
                 return response()->json(['error' => 'User not authenticated'], 401);
             }
+
             return response()->json([
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -27,6 +28,7 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'day_of_birth' => $user->day_of_birth,
                 'role_id' => $user->role_id,
+                'role' => $user->role ? $user->role->name : 'N/A', // ✅ Trả về tên role
                 'avatar_url' => $user->avatar_url ?? '/images/default_avatar.png',
             ], 200);
         } catch (\Exception $e) {
@@ -37,12 +39,12 @@ class ProfileController extends Controller
             ]);
         }
     }
-
     /**
      * Cập nhật thông tin hồ sơ (trừ avatar)
      */
     public function updateProfile(ProfileRequest $request)
     {
+        Log::info('Received updateProfile request', $request->all()); // 🐞 Debug log
         /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!$user) {
@@ -60,6 +62,7 @@ class ProfileController extends Controller
 
         return response()->json(['message' => 'Cập nhật thành công', 'user' => $user], 200);
     }
+
 
     /**
      * Cập nhật Avatar riêng biệt
