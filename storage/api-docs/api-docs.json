@@ -224,6 +224,12 @@
                                     "address_2": {
                                         "type": "string",
                                         "nullable": true
+                                    },
+                                    "tax_code": {
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -328,6 +334,12 @@
                                     "address_2": {
                                         "type": "string",
                                         "nullable": true
+                                    },
+                                    "tax_code": {
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -347,30 +359,38 @@
                 ]
             }
         },
-        "/profile": {
-            "put": {
+        "/change-password": {
+            "post": {
                 "tags": [
-                    "Profile"
+                    "Password"
                 ],
-                "summary": "Cập nhật thông tin cá nhân",
-                "operationId": "a36e92ccda89dd3aa71c9f01c01b22cf",
+                "summary": "Đổi mật khẩu",
+                "description": "Đổi mật khẩu người dùng",
+                "operationId": "7e4f0ad7eab74dcdc83e674fa2b40882",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "old_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
                                 "properties": {
-                                    "first_name": {
+                                    "old_password": {
                                         "type": "string",
-                                        "example": "John"
+                                        "example": "Password123!"
                                     },
-                                    "last_name": {
+                                    "new_password": {
                                         "type": "string",
-                                        "example": "Doe"
+                                        "format": "password",
+                                        "example": "NewPass@123"
                                     },
-                                    "avatar": {
+                                    "new_password_confirmation": {
                                         "type": "string",
-                                        "format": "binary"
+                                        "format": "password",
+                                        "example": "NewPass@123"
                                     }
                                 },
                                 "type": "object"
@@ -380,10 +400,68 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Cập nhật thành công"
+                        "description": "Đổi mật khẩu thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Đổi mật khẩu thành công"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Mật khẩu cũ không đúng",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Mật khẩu cũ không đúng"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Không có quyền truy cập"
+                        "description": "User chưa đăng nhập",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "User not authenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Lỗi server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -403,6 +481,9 @@
                 "responses": {
                     "200": {
                         "description": "Danh sách quyền"
+                    },
+                    "404": {
+                        "description": "Không có quyền"
                     }
                 },
                 "security": [
@@ -469,6 +550,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID của quyền",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -776,8 +858,8 @@
             "description": "Hotel Management API"
         },
         {
-            "name": "Profile",
-            "description": "Quản lý thông tin cá nhân"
+            "name": "Password",
+            "description": "API liên quan đến đổi mật khẩu người dùng"
         },
         {
             "name": "Roles",

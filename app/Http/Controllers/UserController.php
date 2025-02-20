@@ -36,11 +36,25 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->input('per_page', 10);
+            $perPage = $request->input('per_page', 10);  // Lấy số lượng bản ghi mỗi trang
             $query = $this->userService->getAllUser();
 
-            // Lấy danh sách tất cả các hodel phân trang
+            // Nếu có các điều kiện tìm kiếm, áp dụng chúng ở đây
+            if ($name = $request->input('name')) {
+                $query->where('name', 'like', "%$name%");
+            }
+
+            if ($email = $request->input('email')) {
+                $query->where('email', 'like', "%$email%");
+            }
+
+            if ($roleId = $request->input('role_id')) {
+                $query->where('role_id', $roleId);
+            }
+
+            // Lấy danh sách người dùng phân trang
             $users = $query->paginate($perPage);
+
             return response()->json([
                 'message' => 'Users fetched successfully',
                 'data' => $users->items(),
@@ -59,6 +73,7 @@ class UserController extends Controller
             ]);
         }
     }
+
     /**
      * @OA\Get(
      *     path="/users/{id}",
@@ -121,9 +136,17 @@ class UserController extends Controller
      */
     public function createUser(CreateUserRequest $request)
     {
-        return $this->userService->createUser($request);
+        try {
+            return $this->userService->createUser($request);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
     }
-
+    
     /**
      * @OA\Put(
      *     path="/users/{id}",
@@ -193,6 +216,16 @@ class UserController extends Controller
     {
         return $this->userService->deleteUser($id);
     }
+    
+    public function search(Request $request)
+    {
+        $filters = $request->only(['name', 'user_name', 'email', 'role_id']); // Lấy tất cả các bộ lọc từ request
+
+        $users = User::search($filters)->get(); // Sử dụng scopeSearch để tìm kiếm theo các bộ lọc
+
+        return response()->json($users);
+    }
+
 
 
     // Hiển thị danh sách khách sạn (UI)
@@ -221,16 +254,5 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         return view('users.edit', compact('user'));
-    }
-    public function search(SearchUserRequest $request)
-    {
-        // Lấy dữ liệu tìm kiếm từ request
-        $filters = $request->only(['name', 'code', 'city_id']);
-
-        // Áp dụng scope tìm kiếm
-        $users = User::search($filters)->get();
-
-        // Trả về kết quả dưới dạng JSON
-        return response()->json($users);
     }
 }

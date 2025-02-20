@@ -6,14 +6,6 @@ use App\Models\District;
 use App\Models\Ward;
 class AddressController extends Controller
 {
-    public function __construct()
-    {
-        
-    }
-    public function index()
-    {
-
-    }
     public function getAllCities()
     {
         $cities = City::all();

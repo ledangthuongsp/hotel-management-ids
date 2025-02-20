@@ -2,50 +2,92 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UserRequest\ProfileUpdateRequest;
-use App\Services\ProfileService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Routing\Controller;
-/**
- * @OA\Tag(
- *     name="Profile",
- *     description="Quản lý thông tin cá nhân"
- * )
- */
+use App\Http\Requests\ProfileRequest;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 class ProfileController extends Controller
 {
-    protected $profileService;
-
-    public function __construct(ProfileService $profileService)
+    /**
+     * Lấy thông tin hồ sơ người dùng hiện tại
+     */
+    public function getProfile()
     {
-        $this->profileService = $profileService;
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['error' => 'User not authenticated'], 401);
+            }
+            return response()->json([
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'user_name' => $user->user_name,
+                'email' => $user->email,
+                'day_of_birth' => $user->day_of_birth,
+                'role_id' => $user->role_id,
+                'avatar_url' => $user->avatar_url ?? '/images/default_avatar.png',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
     }
 
     /**
-     * @OA\Put(
-     *     path="/profile",
-     *     summary="Cập nhật thông tin cá nhân",
-     *     tags={"Profile"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="first_name", type="string", example="John"),
-     *             @OA\Property(property="last_name", type="string", example="Doe"),
-     *             @OA\Property(property="avatar", type="string", format="binary")
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Cập nhật thành công"),
-     *     @OA\Response(response=401, description="Không có quyền truy cập")
-     * )
+     * Cập nhật thông tin hồ sơ (trừ avatar)
      */
-    public function updateProfile(ProfileUpdateRequest $request): JsonResponse
+    public function updateProfile(ProfileRequest $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+
+        $user->update([
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+            'user_name' => $request->input('user_name'),
+            'email' => $request->input('email'),
+            'day_of_birth' => $request->input('day_of_birth'),
+            'role_id' => $request->input('role_id')
+        ]);
+
+        return response()->json(['message' => 'Cập nhật thành công', 'user' => $user], 200);
+    }
+
+    /**
+     * Cập nhật Avatar riêng biệt
+     */
+    public function updateAvatar(Request $request)
     {
         $user = Auth::user();
         dd($user);
-        $updatedUser = $this->profileService->updateProfile($user, $request->validated());
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
 
-        return response()->json(['message' => 'Profile updated successfully', 'user' => $updatedUser]);
+        if ($request->hasFile('avatar')) {
+            $uploadedFileUrl = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
+            $user->avatar_url = $uploadedFileUrl;
+            $user->save();
+
+            return response()->json(['avatar_url' => $uploadedFileUrl], 200);
+        }
+
+        return response()->json(['error' => 'Không có file nào được tải lên'], 400);
+    }
+
+    /**
+     * Trả về giao diện profile
+     */
+    public function ui_getUser()
+    {
+        return view('profile.index');
     }
 }
