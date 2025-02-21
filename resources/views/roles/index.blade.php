@@ -11,21 +11,14 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title">List Role</div>
-                <!-- Nút mở modal thay vì điều hướng -->
                 <button class="btn btn-success float-right" data-toggle="modal" data-target="#createRoleModal">
                     Create New Role
                 </button>
             </div>
             <div class="card-body">
-                @if(session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                @endif
+                <div id="alertMessage"></div>
 
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-                
-                <table class="table table-bordered">
+                <table class="table table-bordered" id="roleTable">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -35,19 +28,14 @@
                     </thead>
                     <tbody>
                         @foreach($roles as $role)
-                            <tr>
+                            <tr id="role_{{ $role->id }}">
                                 <td>{{ $role->id }}</td>
                                 <td>{{ $role->name }}</td>
                                 <td>
-                                    <!-- Nút edit -->
                                     <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-warning btn-sm">Update</a>
-                                    
-                                    <!-- Nút delete -->
-                                    <form action="{{ route('roles.destroy', $role->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa role này?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                    </form>
+                                    <button class="btn btn-danger btn-sm delete-role" data-id="{{ $role->id }}">
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -57,50 +45,48 @@
         </div>
     </div>
 
-    <!-- Include modal create_role -->
     @include('modals.create_role')
+
     <script>
-        function fetchRoles() {
-            fetch('/api/roles', {
-                method: "GET",
-                headers: {
-                    "Accept": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                let roleTableBody = document.querySelector("table tbody");
-                roleTableBody.innerHTML = ""; // Xóa danh sách cũ
-    
-                if (data.length === 0) {
-                    roleTableBody.innerHTML = '<tr><td colspan="3">No roles found.</td></tr>';
-                    return;
-                }
-    
-                data.forEach(role => {
-                    roleTableBody.innerHTML += `
-                        <tr>
-                            <td>${role.id}</td>
-                            <td>${role.name}</td>
-                            <td>
-                                <a href="/roles/${role.id}/edit" class="btn btn-warning btn-sm">Update</a>
-                                <form action="/roles/${role.id}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa role này?')" style="display:inline;">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    `;
-                });
-            })
-            .catch(error => console.error("Error fetching roles:", error));
-        }
-    
-        // Gọi fetchRoles() khi trang load
         document.addEventListener("DOMContentLoaded", function() {
-            fetchRoles();
+            document.querySelectorAll(".delete-role").forEach(button => {
+                button.addEventListener("click", function () {
+                    let roleId = this.getAttribute("data-id");
+    
+                    if (!confirm("Bạn có chắc chắn muốn xóa role này?")) {
+                        return;
+                    }
+    
+                    fetch(`/roles/${roleId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Accept": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Lỗi: " + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById("alertMessage").innerHTML = 
+                                `<div class="alert alert-danger">${data.error}</div>`;
+                        } else {
+                            document.getElementById("alertMessage").innerHTML = 
+                                `<div class="alert alert-success">${data.message}</div>`;
+                            document.getElementById(`role_${roleId}`).remove();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error deleting role:", error);
+                        document.getElementById("alertMessage").innerHTML = 
+                            `<div class="alert alert-danger">Không thể xóa role. Lỗi: ${error.message}</div>`;
+                    });
+                });
+            });
         });
     </script>
     

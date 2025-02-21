@@ -24,7 +24,7 @@ Route::get('wards/{districtId}', [AddressController::class, 'getWards'])->name('
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('profile', [ProfileController::class, 'updateProfile']);
     Route::get('roles', [RoleController::class, 'listRoles']);
-        Route::get('/roles/{id}', [RoleController::class, 'findRoleById']);
+    Route::get('/roles/{id}', [RoleController::class, 'findRoleById']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

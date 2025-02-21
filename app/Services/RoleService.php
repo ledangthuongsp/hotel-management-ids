@@ -30,9 +30,12 @@ class RoleService
 
     public function deleteRole($roleId)
     {
-        if (User::where('role_id', $roleId)->exists()) {
-            throw new \Exception('Không thể xóa role đang được sử dụng');
+         // Kiểm tra xem role có đang được sử dụng không
+        $userUsingRole = User::where('role_id', $roleId)->first();
+        if ($userUsingRole) {
+            throw new \Exception('Không thể xóa role đang được sử dụng.');
         }
+
         return Role::destroy($roleId);
     }
 }

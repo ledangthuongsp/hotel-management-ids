@@ -36,38 +36,43 @@
         document.getElementById('loginForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            let formData = new FormData(this); // Lấy toàn bộ dữ liệu form
+            let formData = new FormData(this);
             let errorMessage = document.getElementById('error-message');
 
             fetch('{{ route('login.post') }}', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json' // Yêu cầu máy chủ trả về JSON
+                    'Accept': 'application/json'
                 },
-                body: new FormData(document.getElementById('loginForm'))
+                body: formData
             })
-            .then(response => {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                } else {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-            })
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200) {
+                    localStorage.setItem('token', body.token);
                     window.location.href = "/hotels";
+                } else if (status === 422) {
+                    // Handle validation errors (email does not exist or incorrect password)
+                    let errorText = '';
+                    if (body.errors) {
+                        if (body.errors.email) {
+                            errorText += "This email does not exist.<br>";
+                        }
+                        if (body.errors.password) {
+                            errorText += "Incorrect password.<br>";
+                        }
+                    }
+                    errorMessage.innerHTML = errorText || "Invalid login credentials.";
                 } else {
-                    document.getElementById('error-message').innerText = data.error || "Đăng nhập thất bại!";
+                    errorMessage.innerText = body.error || "Login failed! Please try again.";
                 }
             })
             .catch(error => {
                 console.error('Login error:', error);
-                document.getElementById('error-message').innerText = "Có lỗi xảy ra, vui lòng thử lại.";
+                errorMessage.innerText = "Server connection error. Please try again.";
             });
-
         });
+
     </script>
 @endsection

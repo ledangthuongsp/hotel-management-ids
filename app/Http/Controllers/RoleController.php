@@ -83,17 +83,17 @@ class RoleController extends Controller
                 'description' => 'nullable|string|max:255'
             ]);
 
-            // 🔥 Nếu role đã bị soft delete, khôi phục thay vì tạo mới
+            // 🔥 Tìm role đã bị soft delete với cùng tên
             $deletedRole = Role::withTrashed()->where('name', $validated['name'])->first();
             if ($deletedRole) {
-                $deletedRole->restore(); // Khôi phục role cũ
-                $deletedRole->update($validated); // Cập nhật thông tin mới
+                $deletedRole->restore(); // Khôi phục role đã bị xóa mềm
+                $deletedRole->update($validated); // Cập nhật lại thông tin mới
                 return response()->json(['message' => 'Role restored successfully', 'role' => $deletedRole], 200);
             }
 
-            // 🔥 Giới hạn số lượng role (không tính role đã bị xóa)
-            if (Role::count() >= 2) {
-                return response()->json(['message' => 'You can only create 2 roles.'], 400);
+            // 🔥 Kiểm tra tổng số role hiện có (không tính role đã bị soft delete)
+            if (Role::whereNull('deleted_at')->count() >= 2) {
+                return response()->json(['message' => 'You can only create up to 2 roles.'], 400);
             }
 
             // Nếu không có role trùng tên, tạo mới
@@ -108,6 +108,7 @@ class RoleController extends Controller
             ], 500);
         }
     }
+
 
 
 
