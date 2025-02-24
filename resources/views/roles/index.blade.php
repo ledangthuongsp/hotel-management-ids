@@ -48,46 +48,49 @@
     @include('modals.create_role')
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll(".delete-role").forEach(button => {
-                button.addEventListener("click", function () {
-                    let roleId = this.getAttribute("data-id");
-    
-                    if (!confirm("Bạn có chắc chắn muốn xóa role này?")) {
-                        return;
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".delete-role").forEach(button => {
+        button.addEventListener("click", function () {
+            let roleId = this.getAttribute("data-id");
+
+            if (!confirm("Are you sure you want to delete this role?")) {
+                return;
+            }
+
+            fetch(`/roles/${roleId}`, {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    let errorMessage = data.error;
+
+                    // 🔥 Custom thông báo lỗi nếu role đang được sử dụng
+                    if (errorMessage.includes("Không thể xóa role đang được sử dụng")) {
+                        errorMessage = "This role cannot be deleted because it is currently assigned to a user.";
                     }
-    
-                    fetch(`/roles/${roleId}`, {
-                        method: "DELETE",
-                        headers: {
-                            "Accept": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("Lỗi: " + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.error) {
-                            document.getElementById("alertMessage").innerHTML = 
-                                `<div class="alert alert-danger">${data.error}</div>`;
-                        } else {
-                            document.getElementById("alertMessage").innerHTML = 
-                                `<div class="alert alert-success">${data.message}</div>`;
-                            document.getElementById(`role_${roleId}`).remove();
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error deleting role:", error);
-                        document.getElementById("alertMessage").innerHTML = 
-                            `<div class="alert alert-danger">Không thể xóa role. Lỗi: ${error.message}</div>`;
-                    });
-                });
+
+                    document.getElementById("alertMessage").innerHTML = 
+                        `<div class="alert alert-danger">${errorMessage}</div>`;
+                } else {
+                    document.getElementById("alertMessage").innerHTML = 
+                        `<div class="alert alert-success">${data.message}</div>`;
+                    document.getElementById(`role_${roleId}`).remove();
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting role:", error);
+                document.getElementById("alertMessage").innerHTML = 
+                    `<div class="alert alert-danger">Failed to delete role. Error: ${error.message}</div>`;
             });
         });
+    });
+});
+
     </script>
     
 @endsection

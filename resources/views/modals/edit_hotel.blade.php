@@ -11,79 +11,79 @@
             <div class="modal-body">
                 <!-- Form to edit hotel -->
                 <form id="edit-hotel-form">
-                    <input type="hidden" id="edit-hotel-id" name="hotel_id"> <!-- Hidden input for Hotel ID -->
-                    
+                    <input type="hidden" id="edit-hotel-id"> <!-- Hidden input for Hotel ID -->
+
                     <!-- Hotel Name -->
                     <div class="form-group">
                         <label for="edit-hotel-name">Hotel Name</label>
-                        <input type="text" id="edit-hotel-name" name="hotel_name" class="form-control" required>
-                    </div>
-
-                    <!-- Hotel Name (JP) -->
-                    <div class="form-group">
-                        <label for="edit-hotel-name-jp">Hotel Name (JP)</label>
-                        <input type="text" id="edit-hotel-name-jp" name="hotel_name_jp" class="form-control">
+                        <input type="text" class="form-control" id="edit-hotel-name" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-name"></small>
                     </div>
 
                     <!-- Hotel Code -->
                     <div class="form-group">
                         <label for="edit-hotel-code">Hotel Code</label>
-                        <input type="text" id="edit-hotel-code" name="hotel_code" class="form-control" required>
+                        <input type="text" class="form-control" id="edit-hotel-code" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-code"></small>
                     </div>
 
-                    <!-- User ID -->
+                    <!-- City Name -->
                     <div class="form-group">
-                        <label for="edit-hotel-user-id">User ID</label>
-                        <input type="number" id="edit-hotel-user-id" name="hotel_user_id" class="form-control" required>
-                    </div>
-
-                    <!-- City ID -->
-                    <div class="form-group">
-                        <label for="edit-hotel-city-id">City ID</label>
-                        <input type="number" id="edit-hotel-city-id" name="hotel_city_id" class="form-control" required>
+                        <label for="edit-hotel-city">City</label>
+                        <select class="form-control" id="edit-hotel-city">
+                            <option value="">--Select City--</option>
+                        </select>
+                        <small class="text-danger error-message" id="error-edit-hotel-city"></small>
                     </div>
 
                     <!-- Hotel Email -->
                     <div class="form-group">
                         <label for="edit-hotel-email">Hotel Email</label>
-                        <input type="email" id="edit-hotel-email" name="hotel_email" class="form-control" required>
+                        <input type="email" class="form-control" id="edit-hotel-email" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-email"></small>
                     </div>
 
                     <!-- Hotel Telephone -->
                     <div class="form-group">
                         <label for="edit-hotel-telephone">Hotel Telephone</label>
-                        <input type="text" id="edit-hotel-telephone" name="hotel_telephone" class="form-control" required>
+                        <input type="text" class="form-control" id="edit-hotel-telephone" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-telephone"></small>
                     </div>
 
-                    <!-- Hotel Fax -->
-                    <div class="form-group">
-                        <label for="edit-hotel-fax">Hotel Fax</label>
-                        <input type="text" id="edit-hotel-fax" name="hotel_fax" class="form-control">
-                    </div>
-
-                    <!-- Hotel Address 1 -->
-                    <div class="form-group">
-                        <label for="edit-hotel-address-1">Hotel Address 1</label>
-                        <input type="text" id="edit-hotel-address-1" name="hotel_address_1" class="form-control" required>
-                    </div>
-
-                    <!-- Hotel Address 2 -->
-                    <div class="form-group">
-                        <label for="edit-hotel-address-2">Hotel Address 2</label>
-                        <input type="text" id="edit-hotel-address-2" name="hotel_address_2" class="form-control">
-                    </div>
-
-                    <!-- Tax Code (Required) -->
+                    <!-- Tax Code -->
                     <div class="form-group">
                         <label for="edit-hotel-tax-code">Tax Code</label>
-                        <input type="text" class="form-control" id="edit-hotel-tax-code" name ="edit-hotel-tax-code" required>
-                    </div>
-                    <!-- Company Name (Required) -->
-                    <div class="form-group">
-                        <label for="edit-hotel-company-name">Company Name</label>
-                        <input type="text" class="form-control" id="edit-hotel-company-name" name="edit-hotel-company-name" required>
+                        <input type="text" class="form-control" id="edit-hotel-tax-code" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-tax-code"></small>
                     </div>
 
+                    <!-- Company Name -->
+                    <div class="form-group">
+                        <label for="edit-hotel-company-name">Company Name</label>
+                        <input type="text" class="form-control" id="edit-hotel-company-name" required>
+                        <small class="text-danger error-message" id="error-edit-hotel-company-name"></small>
+                    </div>
+
+                    <!-- Optional Fields -->
+                    <div class="form-group">
+                        <label for="edit-hotel-address-1">Address 1</label>
+                        <input type="text" class="form-control" id="edit-hotel-address-1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-hotel-address-2">Address 2 (Optional)</label>
+                        <input type="text" class="form-control" id="edit-hotel-address-2">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-hotel-fax">Fax (Optional)</label>
+                        <input type="text" class="form-control" id="edit-hotel-fax">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-hotel-name-jp">Hotel Name (JP) (Optional)</label>
+                        <input type="text" class="form-control" id="edit-hotel-name-jp">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

@@ -1,30 +1,26 @@
+# Sử dụng PHP 8.2 FPM (FastCGI Process Manager)
 FROM php:8.2-fpm
 
-# Cài đặt các dependencies
+# Cập nhật hệ thống và cài đặt các thư viện cần thiết
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
     libpng-dev \
-    libonig-dev \
-    libxml2-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     zip \
     unzip \
-    netcat-openbsd \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    git \
+    curl \
+    && docker-php-ext-install pdo_mysql gd
 
 # Cài đặt Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy toàn bộ mã nguồn vào container
-COPY . /app
+# Thiết lập thư mục làm việc
+WORKDIR /var/www/html
 
-# Thiết lập quyền cho thư mục
-RUN chown -R www-data:www-data /app/storage \
-    && chown -R www-data:www-data /app/bootstrap/cache
+# Sao chép mã nguồn Laravel vào container
+COPY . /var/www/html
 
-WORKDIR /app
-
-# Entrypoint script
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+# Thiết lập quyền cho thư mục storage và bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache

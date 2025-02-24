@@ -16,6 +16,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">User Profile</div>
+                <div id="success-message" class="alert alert-success d-none"></div>
+                <div id="error-message" class="alert alert-danger d-none"></div>    
                 <div class="card-body">
                     <div id="successMessage" class="alert alert-success" style="display: none;">Profile updated successfully!</div>
                     <!-- View Mode -->
@@ -105,7 +107,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('avatar_preview').src = data.avatar_url ? data.avatar_url : '/images/default_avatar.png';
+                const avatarUrl = (data.avatar_url === 'default_avatar.png' || !data.avatar_url) 
+                        ? '/images/default_avatar.png' 
+                        : data.avatar_url;
+                document.getElementById('avatar_preview').src = avatarUrl;
                 document.getElementById('view_first_name').innerText = data.first_name || 'N/A';
                 document.getElementById('view_last_name').innerText = data.last_name || 'N/A';
                 document.getElementById('view_user_name').innerText = data.user_name || 'N/A';
@@ -123,7 +128,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('edit_avatar_preview').src = data.avatar_url || '/images/default_avatar.png';
+                const avatarUrl = (data.avatar_url === 'default_avatar.png' || !data.avatar_url) 
+                        ? '/images/default_avatar.png' 
+                        : data.avatar_url;
+                document.getElementById('edit_avatar_preview').src = avatarUrl;
                 document.getElementById('edit_first_name').value = data.first_name;
                 document.getElementById('edit_last_name').value = data.last_name;
                 document.getElementById('edit_user_name').value = data.user_name;
@@ -153,44 +161,114 @@
         }
         async function saveProfile() {
             try {
-                // Hiển thị loading
-                document.getElementById('loading').style.display = 'block';
-
-                // Kiểm tra xem có file avatar mới không
-                const avatarFile = document.getElementById('avatar').files[0];
-                let avatarUrl = null;
-
-                // Nếu có file avatar mới, upload lên server
-                if (avatarFile) {
-                    const formData = new FormData();
-                    formData.append('avatar', avatarFile);
-
-                    const uploadResponse = await fetch('/api/profile/avatar', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-                        body: formData,
-                    });
-
-                    if (!uploadResponse.ok) {
-                        throw await uploadResponse.json();
-                    }
-
-                    const uploadData = await uploadResponse.json();
-                    avatarUrl = uploadData.avatar_url; // Lấy URL avatar mới
+                // ✅ Kiểm tra nếu phần tử lỗi không tồn tại, tạo mới trong DOM
+                let errorMessageEl = document.getElementById('errorMessage');
+                let successMessageEl = document.getElementById('successMessage');
+                if (!errorMessageEl) {
+                    errorMessageEl = document.createElement("div");
+                    errorMessageEl.id = "errorMessage";
+                    errorMessageEl.className = "alert alert-danger d-none";
+                    document.body.appendChild(errorMessageEl);
+                }
+                if (!successMessageEl) {
+                    successMessageEl = document.createElement("div");
+                    successMessageEl.id = "successMessage";
+                    successMessageEl.className = "alert alert-success d-none";
+                    document.body.appendChild(successMessageEl);
                 }
 
-                // Chuẩn bị dữ liệu profile để cập nhật
+                // ✅ Ẩn thông báo cũ
+                successMessageEl.classList.add('d-none');
+                errorMessageEl.classList.add('d-none');
+                errorMessageEl.innerText = ''; // Xóa nội dung lỗi cũ
+
+                // ✅ Reset error messages trong các input
+                document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+
+                let isValid = true;
+
+                // 🔥 Validate Required Fields
+                let firstName = document.getElementById('edit_first_name').value.trim();
+                let lastName = document.getElementById('edit_last_name').value.trim();
+                let userName = document.getElementById('edit_user_name').value.trim();
+                let email = document.getElementById('edit_email').value.trim();
+                let dayOfBirth = document.getElementById('edit_day_of_birth').value.trim();
+                let roleId = document.getElementById('edit_role_hidden').value;
+                let avatarFile = document.getElementById('avatar').files[0];
+
+                // 🔴 First Name Validate
+                if (firstName.length < 1 || firstName.length > 255) {
+                    document.getElementById('error_first_name').innerText = "First name must be between 1 and 255 characters.";
+                    isValid = false;
+                }
+
+                // 🔴 Last Name Validate
+                if (lastName.length < 1 || lastName.length > 255) {
+                    document.getElementById('error_last_name').innerText = "Last name must be between 1 and 255 characters.";
+                    isValid = false;
+                }
+
+                // 🔴 Username Validate
+                if (userName.length < 1 || userName.length > 50) {
+                    document.getElementById('error_user_name').innerText = "Username must be between 1 and 50 characters.";
+                    isValid = false;
+                }
+
+                // 🔴 Email Validate
+                let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email.match(emailPattern) || email.length > 255) {
+                    document.getElementById('error_email').innerText = "Invalid email format or exceeds 255 characters.";
+                    isValid = false;
+                }
+
+                // 🔴 Avatar Validate (Nếu có)
+                let avatarUrl = null;
+                if (avatarFile) {
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml'];
+                    if (!allowedTypes.includes(avatarFile.type)) {
+                        document.getElementById('error_avatar').innerText = "Only JPG, PNG, GIF, or SVG images are allowed.";
+                        isValid = false;
+                    } else if (avatarFile.size > 2 * 1024 * 1024) { // 2MB
+                        document.getElementById('error_avatar').innerText = "Avatar size must not exceed 2MB.";
+                        isValid = false;
+                    } else {
+                        // Upload Avatar
+                        const formData = new FormData();
+                        formData.append('avatar', avatarFile);
+                        const uploadResponse = await fetch('/api/profile/avatar', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                            body: formData,
+                        });
+
+                        if (!uploadResponse.ok) {
+                            throw await uploadResponse.json();
+                        }
+
+                        const uploadData = await uploadResponse.json();
+                        avatarUrl = uploadData.avatar_url;
+                    }
+                }
+
+                // ❌ Nếu có lỗi, dừng lại
+                if (!isValid) {
+                    errorMessageEl.innerText = "Please fix the errors before submitting.";
+                    errorMessageEl.classList.remove('d-none');
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                // ✅ Dữ liệu hợp lệ -> Gửi API
                 const profileData = {
-                    first_name: document.getElementById('edit_first_name').value,
-                    last_name: document.getElementById('edit_last_name').value,
-                    user_name: document.getElementById('edit_user_name').value,
-                    email: document.getElementById('edit_email').value,
-                    day_of_birth: document.getElementById('edit_day_of_birth').value,
-                    role_id: document.getElementById('edit_role_hidden').value,
-                    avatar_url: avatarUrl, // Thêm avatar_url nếu có
+                    first_name: firstName,
+                    last_name: lastName,
+                    user_name: userName,
+                    email: email,
+                    day_of_birth: dayOfBirth || null,
+                    role_id: roleId,
+                    avatar_url: avatarUrl, // Nếu có avatar mới
                 };
 
-                // Gọi API cập nhật profile
                 const profileResponse = await fetch('/api/profile', {
                     method: 'POST',
                     headers: {
@@ -207,36 +285,37 @@
 
                 const profileDataResponse = await profileResponse.json();
 
-                // Clear input file và preview avatar sau khi lưu thành công
-                document.getElementById('avatar').value = ''; // Clear input file
-                document.getElementById('edit_avatar_preview').src = '/images/default_avatar.png'; // Reset preview avatar
-
-                // Cập nhật giao diện sau khi lưu thành công
+                // ✅ Cập nhật giao diện
                 fetchProfileForView();
                 toggleEditMode(false);
 
-                // Hiển thị thông báo thành công
-                document.getElementById('successMessage').style.display = 'block';
+                // ✅ Hiển thị thông báo thành công
+                successMessageEl.innerText = "Profile updated successfully!";
+                successMessageEl.classList.remove('d-none');
                 setTimeout(() => {
-                    document.getElementById('successMessage').style.display = 'none';
-                }, 3000); // Ẩn thông báo sau 3 giây
+                    successMessageEl.classList.add('d-none');
+                }, 3000);
+
             } catch (error) {
                 if (error.errors) {
-                    // Hiển thị lỗi validation
+                    // Hiển thị lỗi từ Server lên UI
                     Object.keys(error.errors).forEach(field => {
                         const errorElement = document.getElementById(`error_${field}`);
                         if (errorElement) {
-                            errorElement.innerText = error.errors[field][0]; // Hiển thị lỗi đầu tiên
+                            errorElement.innerText = error.errors[field][0];
                         }
                     });
                 } else {
-                    console.error('Error updating profile:', error);
+                    // Hiển thị lỗi chung
+                    errorMessageEl.innerText = "An unexpected error occurred. Please try again.";
+                    errorMessageEl.classList.remove('d-none');
                 }
             } finally {
                 // Ẩn loading
                 document.getElementById('loading').style.display = 'none';
             }
         }
+
 
         async function updateAvatar() {
             const fileInput = document.getElementById('avatar');

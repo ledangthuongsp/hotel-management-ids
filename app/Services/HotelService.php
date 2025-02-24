@@ -19,11 +19,15 @@ class HotelService
             throw new \Exception("User role is undefined.");
         }
 
-        // Trả về Query Builder để có thể gọi paginate()
-        return ($user->role_id === '1') 
-            ? Hotel::orderBy('id', 'desc')  // Không dùng get()
-            : Hotel::where('user_id', $user->id)->orderBy('id', 'desc'); // Không dùng get()
+        // Nếu là admin (role_id = 1) thì lấy tất cả hotels
+        if ($user->role_id === 1) {
+            return Hotel::orderBy('id', 'desc'); 
+        }
+
+        // Nếu không phải admin, chỉ lấy hotel của user đó
+        return Hotel::where('user_id', $user->id)->orderBy('id', 'desc');
     }
+
 
 
     public function getHotelById($id)
@@ -55,14 +59,22 @@ class HotelService
         $this->authorizeUser($hotel);
         $hotel->delete();
     }
-
+    
     private function authorizeUser(Hotel $hotel)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && $hotel->user_id !== $user->id) {
+
+        // Nếu là admin, cho phép truy cập tất cả hotels
+        if ($user->role_id === 1) {
+            return;
+        }
+
+        // Nếu không phải admin, chỉ có thể xem hotel của mình
+        if ($hotel->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
     }
+
 
     public function validateHotel(array $data, $id = null)
     {

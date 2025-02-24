@@ -7,6 +7,7 @@ use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Models\User;
 
@@ -143,22 +144,30 @@ class RoleController extends Controller
             ]);
         }
     }
-    public function findRoleById($id):JsonResponse
+    /**
+     * @OA\Get(
+     *     path="/roles/{id}",
+     *     summary="Get role by ID",
+     *     tags={"Roles"},
+     *     security={{"bearerAuth":{}}}, 
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Role ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Role retrieved successfully"),
+     *     @OA\Response(response=404, description="Role not found")
+     * )
+     */
+    public function findRoleById($id): JsonResponse
     {
-        try 
-        {
-            $role = Role::findOrFail($id);
-            return response()->json([
-                'message' => 'User retrieved successfully',
-                'role' => $role
-            ], 200);
-        }
-        catch(\Exception $e)
-        {
-            return response()->json([
-                'message'=>'Error fetching',
-                'error'=>$e->getMessage()
-            ]);
+        try {
+            $role = $this->roleService->findRoleById($id);
+            return response()->json(['message' => 'Role retrieved successfully', 'role' => $role], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Role not found'], 404);
         }
     }
     // ---- UI Methods ----

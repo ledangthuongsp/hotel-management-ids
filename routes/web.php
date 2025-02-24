@@ -49,5 +49,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function(){
     Route::get('/roles/create', [RoleController::class, 'ui_create'])->name('roles.create'); // Đảm bảo có dòng này
     Route::post('/roles', [RoleController::class, 'createRole'])->name('roles.store');
     Route::get('/roles/{id}/edit', [RoleController::class, 'ui_edit'])->name('roles.edit');
-    Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::delete('/roles/{id}', [RoleController::class, 'deleteRole'])->name('roles.destroy');
 });

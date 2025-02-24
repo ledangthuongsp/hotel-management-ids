@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\Models\User;
-
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 class RoleService
 {
     public function listRoles()
@@ -30,12 +30,22 @@ class RoleService
 
     public function deleteRole($roleId)
     {
-         // Kiểm tra xem role có đang được sử dụng không
-        $userUsingRole = User::where('role_id', $roleId)->first();
-        if ($userUsingRole) {
-            throw new \Exception('Không thể xóa role đang được sử dụng.');
+        // Kiểm tra role có tồn tại không
+        $role = Role::find($roleId);
+        if (!$role) {
+            throw new ModelNotFoundException("Role not found.");
         }
 
-        return Role::destroy($roleId);
+        // Kiểm tra xem role có đang được sử dụng không
+        if (User::where('role_id', $roleId)->exists()) {
+            throw new \Exception('This role is assigned to existing users and cannot be deleted.');
+        }
+
+        return $role->delete();
+    }
+
+    public function findRoleById($id)
+    {
+        return Role::findOrFail($id);
     }
 }
