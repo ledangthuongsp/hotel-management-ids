@@ -16,7 +16,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">List of Hotels</h3>
-                            <button class="btn btn-success float-right" onclick="openCreateHotelModal()">Add New Hotel</button>
+                            <button class="btn btn-success float-right" onclick="window.location.href='{{ route('hotels.create') }}'">Add New Hotel</button>
                         </div>
                         <div class="card-body">
                             <!-- Search -->
@@ -76,112 +76,6 @@
         </div>
     </div>
 
-    <!-- Add New Hotel Modal -->
-    <div class="modal fade" id="createHotelModal" tabindex="-1" role="dialog" aria-labelledby="createHotelModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createHotelModalLabel">Add New Hotel</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="createHotelForm">
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="hotel-name">Hotel Name</label>
-                                <input type="text" class="form-control" id="hotel-name" placeholder="Enter Hotel Name">
-                                <small class="text-danger error-message" id="error-hotel-name"></small>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="hotel-code">Hotel Code</label>
-                                <input type="text" class="form-control" id="hotel-code" placeholder="Enter Hotel Code">
-                                <small class="text-danger error-message" id="error-hotel-code"></small>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="hotel-city">City</label>
-                                <select class="form-control" id="hotel-city">
-                                    <option value="">--Select City--</option>
-                                </select>
-                                <small class="text-danger error-message" id="error-hotel-city"></small>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="hotel-district">District</label>
-                                <select class="form-control" id="hotel-district">
-                                    <option value="">--Select District--</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="hotel-ward">Ward</label>
-                                <select class="form-control" id="hotel-ward">
-                                    <option value="">--Select Ward--</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hotel-address-1">Address (Street + Number)</label>
-                            <input type="text" class="form-control" id="hotel-address-1" placeholder="Enter Street Address">
-                            <small class="text-danger error-message" id="error-hotel-address-1"></small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hotel-email">Email</label>
-                            <input type="email" class="form-control" id="hotel-email" placeholder="Enter Email">
-                            <small class="text-danger error-message" id="error-hotel-email"></small>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="hotel-telephone">Telephone</label>
-                                <input type="text" class="form-control" id="hotel-telephone" placeholder="Enter Telephone">
-                                <small class="text-danger error-message" id="error-hotel-telephone"></small>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="hotel-tax-code">Tax Code</label>
-                                <input type="text" class="form-control" id="hotel-tax-code" placeholder="Enter Tax Code">
-                                <small class="text-danger error-message" id="error-hotel-tax-code"></small>
-                            </div>
-                        </div>
-
-                        <!-- Optional Fields (No Validation) -->
-                        <div class="form-group">
-                            <label for="hotel-address-2">Address (Optional)</label>
-                            <input type="text" class="form-control" id="hotel-address-2" placeholder="Enter Additional Address">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hotel-fax">Fax (Optional)</label>
-                            <input type="text" class="form-control" id="hotel-fax" placeholder="Enter Fax">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hotel-name-jp">Hotel Name (Japanese) (Optional)</label>
-                            <input type="text" class="form-control" id="hotel-name-jp" placeholder="Enter Hotel Name in Japanese">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hotel-company-name">Company Name</label>
-                            <input type="text" class="form-control" id="hotel-company-name" placeholder="Enter Company Name">
-                            <small class="text-danger error-message" id="error-hotel-company-name"></small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="createHotel()">Save Hotel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Confirm Delete -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -207,15 +101,15 @@
     <!-- Modals -->
     @include('modals.view_hotel')
     @include('modals.edit_hotel')
-
     <script>
         let currentPage = 1;
         let citiesMap = {}; // Chứa thông tin các thành phố
         let hotelToDelete = null; // Biến lưu thông tin khách sạn đang bị xóa
         let districtsMap = {}; // Lưu danh sách các quận/huyện theo ID
         let wardsMap = {};     // Lưu danh sách phường/xã theo ID
-        // Fetch danh sách thành phố
-        // Hàm fetch danh sách thành phố và cập nhật dropdown
+        let searchingFilters = {};
+        let isSearching = false;
+
         function fetchCitiesForModal() {
             fetch('/api/cities', {
                 method: 'GET',
@@ -244,11 +138,6 @@
                 console.error('Error fetching cities:', error);
                 alert('Unable to load cities. Please try again later.');
             });
-        }
-        // Mở modal và gọi hàm fetchCitiesForModal
-        function openCreateHotelModal() {
-            fetchCitiesForModal();
-            $('#createHotelModal').modal('show');
         }
         function fetchCities() {
             console.log("🔍 Fetching cities...");
@@ -290,65 +179,6 @@
                 console.error("🚨 Error fetching cities:", error);
             });
         }
-        // Khi chọn City, tự động fetch danh sách Districts
-        document.getElementById('hotel-city').addEventListener('change', function () {
-            fetchDistricts(this.value);
-        });
-
-        //  Khi chọn District, tự động fetch danh sách Wards
-        document.getElementById('hotel-district').addEventListener('change', function () {
-            fetchWards(this.value);
-        });
-
-         //  danh sách Districts theo City ID
-         function fetchDistricts(cityId) {
-            if (!cityId) return;
-
-            fetch(`/api/districts/${cityId}`, {
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-            })
-            .then(response => response.json())
-            .then(districts => {
-                let districtDropdown = document.getElementById('hotel-district');
-                districtDropdown.innerHTML = '<option value="">--Select District--</option>';
-
-                districts.forEach(district => {
-                    districtsMap[district.id] = district.name; // 🔥 Lưu tên district vào Map
-
-                    let option = document.createElement('option');
-                    option.value = district.id;
-                    option.textContent = district.name;
-                    districtDropdown.appendChild(option);
-                });
-            })
-            .catch(error => console.error("🚨 Error fetching districts:", error));
-        }
-
-
-        // Fetch danh sách Wards theo District ID
-        function fetchWards(districtId) {
-            if (!districtId) return;
-
-            fetch(`/api/wards/${districtId}`, {
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-            })
-            .then(response => response.json())
-            .then(wards => {
-                let wardDropdown = document.getElementById('hotel-ward');
-                wardDropdown.innerHTML = '<option value="">--Select Ward--</option>';
-
-                wards.forEach(ward => {
-                    wardsMap[ward.id] = ward.name; // 🔥 Lưu tên ward vào Map
-
-                    let option = document.createElement('option');
-                    option.value = ward.id;
-                    option.textContent = ward.name;
-                    wardDropdown.appendChild(option);
-                });
-            })
-            .catch(error => console.error("🚨 Error fetching wards:", error));
-        }
-
 
         function filterCities() {
             let searchTerm = document.getElementById('search-city').value.toLowerCase(); // Lấy từ khóa tìm kiếm
@@ -369,111 +199,17 @@
             });
         }
         // Tạo khách sạn mới
-        function createHotel() {
-            // Reset error messages
-            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
-
-            // Get input values & trim spaces
-            let name = document.getElementById('hotel-name').value.trim();
-            let nameJP = document.getElementById('hotel-name-jp').value.trim();
-            let code = document.getElementById('hotel-code').value.trim();
-            let cityId = document.getElementById('hotel-city').value.trim();
-            let districtId = document.getElementById('hotel-district').value.trim();
-            let wardId = document.getElementById('hotel-ward').value.trim();
-            let email = document.getElementById('hotel-email').value.trim();
-            let telephone = document.getElementById('hotel-telephone').value.trim();
-            let streetAddress = document.getElementById('hotel-address-1').value.trim();
-            let address2 = document.getElementById('hotel-address-2').value.trim();
-            let fax = document.getElementById('hotel-fax').value.trim();
-            let taxCode = document.getElementById('hotel-tax-code').value.trim();
-            let companyName = document.getElementById('hotel-company-name').value.trim();
-
-            // Required fields for validation
-            let requiredFields = {
-                "hotel-name": name,
-                "hotel-code": code,
-                "hotel-city": cityId,
-                "hotel-email": email,
-                "hotel-telephone": telephone,
-                "hotel-tax-code": taxCode,
-                "hotel-address-1": streetAddress,
-                "hotel-company-name": companyName
-            };
-
-            // Validate fields and show error messages
-            let isValid = validateForm(requiredFields);
-            if (!isValid) return;
-
-            // Construct full address: "Street, Ward, District, City"
-            let fullAddress = `${streetAddress}, ${citiesMap[wardId] || 'Ward'}, ${citiesMap[districtId] || 'District'}, ${citiesMap[cityId] || 'City'}`;
-
-            // Prepare data for API request
-            let hotelData = {
-                name: name,
-                name_jp: nameJP || null, // Optional
-                code: code,
-                city_id: cityId,
-                email: email,
-                telephone: telephone,
-                address_1: fullAddress,
-                address_2: address2 || null, // Optional
-                fax: fax || null, // Optional
-                tax_code: taxCode,
-                company_name: companyName
-            };
-
-            // Send API request
-            fetch('/api/hotels', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(hotelData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    document.getElementById('success-message').innerText = "Hotel created successfully!";
-                    document.getElementById('success-message').classList.remove('d-none');
-                    setTimeout(() => { $('#createHotelModal').modal('hide'); fetchHotels(); }, 1500);
-                } else {
-                    document.getElementById('error-message').innerText = "Failed to create hotel.";
-                    document.getElementById('error-message').classList.remove('d-none');
-                }
-            })
-            .catch(error => {
-                console.error('Error creating hotel:', error);
-                document.getElementById('error-message').innerText = "Error creating hotel.";
-                document.getElementById('error-message').classList.remove('d-none');
-            });
-        }
-
-        // Function to validate required fields
-        function validateForm(fields) {
-            let isValid = true;
-
-            for (let fieldId in fields) {
-                if (!fields[fieldId]) {
-                    document.getElementById(`error-${fieldId}`).innerText = "This field is required.";
-                    isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
         // Fetch danh sách khách sạn
         function fetchHotels() {
-            let city = document.getElementById('filter-city').value;
-            let hotelCode = document.getElementById('filter-hotel-code').value;
-            let hotelName = document.getElementById('filter-hotel-name').value;
+            let url = isSearching
+                ? `/api/hotels/search?page=${currentPage}&per_page=5`
+                : `/api/hotels?page=${currentPage}&per_page=5`;
 
-            let url = `/api/hotels?page=${currentPage}&per_page=5`;
-
-            if (city) url += `&city=${city}`;
-            if (hotelCode) url += `&code=${hotelCode}`;
-            if (hotelName) url += `&name=${hotelName}`;
+            if (isSearching) {
+                if (searchFilters.code) url += `&code=${searchFilters.code}`;
+                if (searchFilters.name) url += `&name=${searchFilters.name}`;
+                if (searchFilters.city_id) url += `&city_id=${searchFilters.city_id}`;
+            }
 
             fetch(url, {
                 method: 'GET',
@@ -482,26 +218,18 @@
                     'Accept': 'application/json'
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error fetching data: ' + response.status);
-                }
-                return response.json(); // Chuyển dữ liệu thành JSON
-            })
+            .then(response => response.json())
             .then(data => {
                 let hotelsList = document.getElementById('hotels-list');
                 hotelsList.innerHTML = '';
 
-                // Kiểm tra nếu dữ liệu không có hoặc data.data không phải là mảng
                 if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
-                    hotelsList.innerHTML = '<tr><td colspan="7">No data to show</td></tr>';
+                    hotelsList.innerHTML = '<tr><td colspan="7">No results found</td></tr>';
                     return;
                 }
 
-                // Duyệt qua từng khách sạn trong data.data và hiển thị thông tin
                 data.data.forEach(hotel => {
                     let cityName = citiesMap[hotel.city_id] || 'Unknown';
-
                     let row = `<tr>
                         <td>${cityName}</td>
                         <td><span class="badge badge-info">${hotel.code}</span></td>
@@ -518,17 +246,21 @@
                     hotelsList.innerHTML += row;
                 });
 
-                // Cập nhật trang hiện tại
+                // Cập nhật số trang từ API
                 document.getElementById('current-page').innerText = `Page ${data.pagination.current_page}`;
+                
+                // Kiểm tra xem có dữ liệu trang tiếp theo không
+                let hasNextPage = data.pagination.current_page < data.pagination.last_page;
+
+                // Kích hoạt / vô hiệu hóa nút Next / Previous
                 document.getElementById('prev-page').disabled = (data.pagination.current_page === 1);
-                document.getElementById('next-page').disabled = (data.pagination.current_page === data.pagination.last_page);
+                document.getElementById('next-page').disabled = !hasNextPage;
             })
-            .catch(error => {   
-                console.error('Error fetching hotels:', error);
-                document.getElementById('hotels-list').innerHTML = '<tr><td colspan="7">Failed to load data</td></tr>';
+            .catch(error => {
+                console.error('Search error:', error);
+                document.getElementById('hotels-list').innerHTML = '<tr><td colspan="7">Error loading data</td></tr>';
             });
         }
-
         // Chỉnh sửa khách sạn
         function editHotel(id) {
             fetch(`/api/hotels/${id}`, {
@@ -681,84 +413,6 @@
             fetchHotels();
         });
 
-        function searchHotels() {
-            let cityId = document.getElementById('filter-city').value;
-            let hotelCode = document.getElementById('filter-hotel-code').value;
-            let hotelName = document.getElementById('filter-hotel-name').value;
-
-            // Kiểm tra nếu tất cả các ô tìm kiếm đều trống
-            if (!cityId && !hotelCode && !hotelName) {
-                fetchHotels();  // Hàm tải lại danh sách khách sạn mặc định
-                return;
-            }
-
-            let url = '/api/hotels/search?';
-
-            // Thêm các tham số vào URL nếu có điều kiện tìm kiếm
-            if (hotelCode) url += `code=${hotelCode}&`;
-            if (hotelName) url += `name=${hotelName}&`;
-            if (cityId) url += `city_id=${cityId}&`;
-
-            // Loại bỏ dấu `&` cuối cùng nếu có
-            url = url.slice(0, -1); // Loại bỏ dấu `&` cuối cùng nếu nó tồn tại
-
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                // Kiểm tra nếu API trả về thành công
-                if (!response.ok) {
-                    console.error('API Error:', response.status, response.statusText);
-                    throw new Error(`Failed to load data from API, Status: ${response.status}, StatusText: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data); // Kiểm tra dữ liệu trả về
-
-                let hotelsList = document.getElementById('hotels-list');
-                hotelsList.innerHTML = '';
-
-                // Kiểm tra nếu dữ liệu không có hoặc data.data không phải là mảng
-                if (!data || !Array.isArray(data) || data.length === 0) {
-                    hotelsList.innerHTML = '<tr><td colspan="7">No data to show</td></tr>';
-                    return;
-                }
-
-                // Duyệt qua từng khách sạn trong data và hiển thị thông tin
-                data.forEach(hotel => {
-                    let cityName = citiesMap[hotel.city_id] || 'Unknown';
-
-                    let row = `<tr>
-                        <td>${cityName}</td>
-                        <td><span class="badge badge-info">${hotel.code}</span></td>
-                        <td>${hotel.name}</td>
-                        <td>${hotel.email}</td>
-                        <td>${hotel.telephone}</td>
-                        <td>${hotel.address_1}</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" onclick="viewHotel(${hotel.id})">View</button>
-                            <button class="btn btn-warning btn-sm" onclick="editHotel(${hotel.id})">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${hotel.id}, '${hotel.code}')">Delete</button>
-                        </td>
-                    </tr>`;
-                    hotelsList.innerHTML += row;
-                });
-
-                // Kiểm tra nếu có dữ liệu phân trang (pagination) trước khi sử dụng
-                if (data.pagination) {
-                    document.getElementById('current-page').innerText = `Page ${data.pagination.current_page}`;
-                    document.getElementById('prev-page').disabled = (data.pagination.current_page === 1);
-                    document.getElementById('next-page').disabled = (data.pagination.current_page === data.pagination.last_page);
-                } else {
-                    console.warn('Pagination data is missing!');
-                }
-            })
-        }
         function viewHotel(hotelId) {
         // Gửi request đến API để lấy dữ liệu hotel
             fetch(`/api/hotels/${hotelId}`, {
@@ -810,7 +464,28 @@
                 alert('Failed to load hotel details');
             });
         }
+        function searchHotels() {
+            let cityId = document.getElementById('filter-city').value;
+            let hotelCode = document.getElementById('filter-hotel-code').value;
+            let hotelName = document.getElementById('filter-hotel-name').value;
 
+            // Lưu trạng thái tìm kiếm vào biến toàn cục
+            searchFilters = {
+                city_id: cityId,
+                code: hotelCode,
+                name: hotelName
+            };
+
+            isSearching = true; // Đánh dấu đang tìm kiếm
+            currentPage = 1; // Reset về trang 1 khi tìm kiếm mới
+            fetchHotels();
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            fetchHotels();
+        }
 
     </script>
 @endsection

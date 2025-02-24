@@ -7,6 +7,7 @@ use App\Services\HotelService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Hotel;
+use Illuminate\Validation\ValidationException;
 /**
  * @OA\Tag(name="Hotels", description="Hotel Management API")
  */
@@ -32,10 +33,11 @@ class HotelController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 10);
+            $page = (int) $request->input('page', 1); // Lấy trang hiện tại từ request
             $query = $this->hotelService->getAllHotels();
 
-            // Lấy danh sách tất cả các hodel phân trang
-            $hotels = $query->paginate($perPage);
+            // Lấy danh sách khách sạn có phân trang
+             $hotels = $query->paginate($perPage, ['*'], 'page', $page); // Truyền page vào paginate
             return response()->json([
                 'message' => 'Hotels fetched successfully',
                 'data' => $hotels->items(),
@@ -202,7 +204,7 @@ class HotelController extends Controller
                 'file' => $e->getFile()
             ]);
         }
-        // --- UI Routes ---
+        // --- UI Routes ---1
     }
     // Hiển thị danh sách khách sạn (UI)
     public function ui_index()
@@ -219,11 +221,29 @@ class HotelController extends Controller
     }
 
     // Hiển thị form tạo khách sạn mới (UI)
-    public function ui_create()
+    public function ui_create(Request $request)
     {
-        return view('hotels.create');
+        return view('modals.create_hotel');
     }
 
+    public function ui_store(Request $request)
+    {
+        try {
+            // Xác thực dữ liệu bằng validateHotel từ HotelService
+            $validatedData = $this->hotelService->validateHotel($request->all());
+
+            // Gọi service để tạo khách sạn
+            $hotel = $this->hotelService->createHotel($validatedData);
+
+            // ✅ Nếu thành công, redirect về danh sách hotels với thông báo
+            return redirect()->route('hotels.index')->with('success', 'Hotel created successfully!');
+
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            return redirect()->route('hotels.index')->with('error', 'Error creating hotel: ' . $e->getMessage());
+        }
+    }
     // Hiển thị form chỉnh sửa khách sạn (UI)
     public function ui_edit($id)
     {
@@ -232,13 +252,54 @@ class HotelController extends Controller
     }
     public function search(Request $request)
     {
-        // Lấy dữ liệu tìm kiếm từ request
-        $filters = $request->only(['name', 'code', 'city_id']);
+        try {
+            // Lấy dữ liệu tìm kiếm từ request
+            $filters = $request->only(['name', 'code', 'city_id']);
 
-        // Áp dụng scope tìm kiếm
-        $hotels = Hotel::search($filters)->get();
+            // Lấy toàn bộ kết quả phù hợp với tìm kiếm
+            $query = Hotel::query();
 
-        // Trả về kết quả dưới dạng JSON
-        return response()->json($hotels);
+            if (!empty($filters['name'])) {
+                $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
+            }
+
+            if (!empty($filters['code'])) {
+                $query->where('code', 'LIKE', '%' . $filters['code'] . '%');
+            }
+
+            if (!empty($filters['city_id'])) {
+                $query->where('city_id', $filters['city_id']);
+            }
+
+            // Lấy tất cả các kết quả phù hợp
+            $results = $query->get();
+
+            // **Phân trang lại dựa trên kết quả tìm kiếm**
+            $page = request('page', 1);
+            $perPage = 5; // Số item trên mỗi trang
+            $offset = ($page - 1) * $perPage;
+
+            // Cắt danh sách kết quả theo trang
+            $paginatedResults = $results->slice($offset, $perPage)->values();
+
+            return response()->json([
+                'message' => 'Search completed successfully',
+                'data' => $paginatedResults,
+                'pagination' => [
+                    'total' => $results->count(),
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'last_page' => ceil($results->count() / $perPage),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+        }
     }
 }

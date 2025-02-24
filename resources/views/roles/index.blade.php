@@ -12,7 +12,7 @@
             <div class="card-header">
                 <div class="card-title">List Role</div>
                 <button class="btn btn-success float-right" data-toggle="modal" data-target="#createRoleModal">
-                    Create New Role
+                    Add New Role
                 </button>
             </div>
             <div class="card-body">
@@ -32,7 +32,6 @@
                                 <td>{{ $role->id }}</td>
                                 <td>{{ $role->name }}</td>
                                 <td>
-                                    <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-warning btn-sm">Update</a>
                                     <button class="btn btn-danger btn-sm delete-role" data-id="{{ $role->id }}">
                                         Delete
                                     </button>

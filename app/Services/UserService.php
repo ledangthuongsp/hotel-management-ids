@@ -54,31 +54,30 @@ class UserService
     public function createUser(Request $request)
     {
         try {
-            // ✅ Validate dữ liệu trước khi tạo user
+            // ✅ Validate dữ liệu đầu vào
             $validatedData = $request->validate([
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'user_name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('users', 'user_name')->where(function ($query) {
-                        return $query->whereNull('deleted_at');
-                    })
-                ],
-                'email' => [
-                    'required',
-                    'email',
-                    Rule::unique('users', 'email')->where(function ($query) {
-                        return $query->whereNull('deleted_at');
-                    })
-                ],
+                'user_name' => 'required|string|max:255',
+                'email' => 'required|email',
                 'password' => 'required|string|min:6',
                 'day_of_birth' => 'nullable|date',
                 'role_id' => 'required|integer|exists:roles,id',
                 'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
-            
+
+            // ✅ Kiểm tra user_name hoặc email đã bị soft delete chưa
+            $existingUser = User::withTrashed()
+                ->where(function ($query) use ($validatedData) {
+                    $query->where('user_name', $validatedData['user_name'])
+                        ->orWhere('email', $validatedData['email']);
+                })
+                ->first();
+
+            if ($existingUser) {
+                // Nếu tồn tại, xóa vĩnh viễn
+                $existingUser->forceDelete();
+            }
 
             // ✅ Lấy thông tin admin tạo user
             $adminId = Auth::check() ? Auth::id() : null;
@@ -93,7 +92,7 @@ class UserService
                 $avatarUrl = $uploadedFile->getSecurePath(); // Lấy URL sau khi upload
             }
 
-            // ✅ Tạo user
+            // ✅ Tạo user mới
             $user = User::create([
                 'first_name' => $validatedData['first_name'],
                 'last_name' => $validatedData['last_name'],
@@ -101,7 +100,7 @@ class UserService
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
                 'day_of_birth' => $validatedData['day_of_birth'] ?? '1990-01-01',
-                'avatar_url' => $avatarUrl, // Lưu URL avatar
+                'avatar_url' => $avatarUrl,
                 'role_id' => $validatedData['role_id'],
                 'create_user' => $adminId,
                 'create_name' => $adminName
@@ -119,6 +118,7 @@ class UserService
             ], 500);
         }
     }
+
 
 
     public function updateUser(Request $request, $id)

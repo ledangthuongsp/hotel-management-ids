@@ -21,7 +21,7 @@ class CreateUserRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('users', 'user_name')->where(function ($query) {
-                    return $query->whereNull('deleted_at'); // ✅ Bỏ qua user đã soft delete
+                    return $query->whereNull('deleted_at'); // Bỏ qua user đã soft delete
                 }),
             ],
             'email' => [

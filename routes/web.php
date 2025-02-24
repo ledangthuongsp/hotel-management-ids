@@ -27,14 +27,14 @@ Route::middleware(['auth:sanctum'])->group(function(){
     Route::get('/change-password', function () {
         return view('password.index');
     })->name('password.index');
+    Route::get('/hotels/create', [HotelController::class, 'ui_create'])->name('hotels.create');
+    Route::post('/hotels/ui-store', [HotelController::class, 'ui_store'])->name('hotels.ui_store');
 });
-// Các route yêu cầu xác thực
+
 Route::middleware(['auth:sanctum', 'check.role'])->group(function () {
     // Route quản lý khách sạn
     Route::get('/hotels', [HotelController::class, 'ui_index'])->name('hotels.index');
     Route::get('/hotels/{id}', [HotelController::class, 'ui_show'])->name('hotels.show');
-    Route::post('/hotels', [HotelController::class, 'ui_store'])->name('hotels.store');
-    Route::get('/hotels/create', [HotelController::class, 'ui_create'])->name('hotels.create');
     Route::put('/hotels/{id}/edit', [HotelController::class, 'ui_edit'])->name('hotels.edit');
 
     //Route quản lý user
